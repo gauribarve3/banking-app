@@ -1,0 +1,33 @@
+/* ============================================================
+   VaultBank Admin Dashboard Visualizations Styles
+   ============================================================ */
+
+.charts-grid-admin {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-5);
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.chart-card {
+  height: 100%;
+}
+
+.chart-card__title {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-4);
+}
+
+.chart-card__canvas {
+  position: relative;
+  height: 280px;
+}
+
+@media (max-width: 768px) {
+  .charts-grid-admin {
+    grid-template-columns: 1fr;
+  }
+}

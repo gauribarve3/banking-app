@@ -1,0 +1,122 @@
+/* Approvals list */
+.approvals-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.approvals-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-12) var(--space-4);
+  text-align: center;
+}
+
+.approvals-empty h3 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.approvals-empty p {
+  color: var(--color-text-secondary);
+}
+
+/* Approval card */
+.approval-card {
+  padding: var(--space-5) var(--space-6) !important;
+}
+
+.approval-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.approval-card__parties {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.approval-card__party {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.approval-card__party-label {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.approval-card__party-name {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.approval-card__party-acc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-family: monospace;
+}
+
+.approval-card__arrow {
+  color: var(--color-text-tertiary);
+}
+
+.approval-card__amount-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.approval-card__amount {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+}
+
+.approval-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.approval-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.approval-card__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Confirm modal */
+.confirm-content p {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-6);
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}

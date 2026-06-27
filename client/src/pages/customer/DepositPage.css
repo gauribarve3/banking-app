@@ -1,0 +1,157 @@
+.deposit-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.deposit-form-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.deposit-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.deposit-error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.deposit-select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.deposit-select:focus {
+  border-color: var(--color-accent);
+}
+
+.deposit-info-note {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--color-accent);
+  line-height: 1.4;
+}
+
+/* Sidebar Summary Card */
+.deposit-summary-sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.deposit-summary-title {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-4);
+}
+
+.deposit-summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.deposit-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.deposit-summary-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.deposit-summary-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.deposit-summary-value {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  text-align: right;
+}
+
+.deposit-summary-amount {
+  color: var(--color-accent);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+}
+
+/* Deposit Result Modal */
+.deposit-result-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-4);
+}
+
+.deposit-result-icon {
+  margin-bottom: var(--space-2);
+}
+
+.deposit-result-modal h3 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.deposit-result-modal p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.deposit-result-modal .sub-text {
+  font-size: var(--font-size-xs);
+  background: var(--color-bg);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  margin: var(--space-2) 0;
+}
+
+.tx-id-code {
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  background: var(--color-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--color-accent);
+}
+
+@media (max-width: 992px) {
+  .deposit-layout {
+    grid-template-columns: 1fr;
+  }
+}

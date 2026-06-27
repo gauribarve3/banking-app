@@ -1,0 +1,227 @@
+/* ============================================================
+   VAULT Sidebar Styles — Role-Aware Navigation
+   ============================================================ */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--vault-bg-secondary);
+  border-right: 1px solid var(--vault-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
+  transition: width 0.3s var(--ease-vault-smooth);
+}
+
+/* Role-specific variables override for general navigation items */
+.sidebar--customer {
+  --role-accent: var(--customer-accent);
+  --role-accent-light: var(--customer-accent-light);
+  --role-accent-hover: var(--customer-accent-mid);
+}
+
+.sidebar--employee {
+  --role-accent: var(--staff-accent);
+  --role-accent-light: var(--staff-accent-light);
+  --role-accent-hover: var(--staff-accent-mid);
+}
+
+.sidebar--admin {
+  --role-accent: var(--admin-accent);
+  --role-accent-light: var(--admin-accent-light);
+  --role-accent-hover: var(--admin-accent-mid);
+}
+
+/* Brand logo zone */
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: var(--topbar-height);
+  padding: 0 var(--space-5);
+  border-bottom: 1px solid var(--vault-border);
+}
+
+.sidebar__logo {
+  flex-shrink: 0;
+}
+
+.sidebar__logo rect {
+  fill: var(--role-accent) !important;
+}
+
+.sidebar__brand-name {
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  color: var(--vault-text-primary);
+  letter-spacing: -0.02em;
+}
+
+/* User Profile box */
+.sidebar__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  margin: var(--space-4) var(--space-3) 0;
+  border-radius: var(--vault-radius-md);
+  background: var(--vault-bg-card);
+  border: 1px solid var(--vault-border);
+  box-shadow: var(--vault-shadow-sm);
+}
+
+.sidebar__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--vault-radius-full);
+  background: var(--role-accent-light);
+  color: var(--role-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 1px solid var(--vault-border);
+}
+
+.sidebar__user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sidebar__user-name {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--vault-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Menu label style */
+.sidebar__nav {
+  flex: 1;
+  padding: var(--space-4) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar__nav-label {
+  font-size: var(--font-label);
+  font-weight: 700;
+  color: var(--vault-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-1);
+}
+
+/* Sidebar nav item links */
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: var(--vault-radius-md);
+  color: var(--vault-text-secondary);
+  font-size: var(--font-body-md);
+  font-weight: 500;
+  transition: transform 0.15s var(--ease-vault-spring),
+              background 0.2s var(--ease-vault-smooth),
+              color 0.2s var(--ease-vault-smooth);
+  text-decoration: none;
+}
+
+.sidebar__link:hover {
+  background: var(--vault-bg-primary);
+  color: var(--vault-text-primary);
+}
+
+.sidebar__link--active {
+  background: var(--role-accent-light) !important;
+  color: var(--role-accent) !important;
+  font-weight: 600;
+  border-left: 3px solid var(--role-accent);
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+
+.sidebar__link--active .sidebar__link-icon {
+  color: var(--role-accent) !important;
+}
+
+.sidebar__link-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.sidebar__link-label {
+  white-space: nowrap;
+}
+
+/* Footer sign out button */
+.sidebar__footer {
+  padding: var(--space-4) var(--space-3);
+  border-top: 1px solid var(--vault-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.theme-toggle-container {
+  display: flex;
+  background: var(--vault-bg-primary);
+  border: 1px solid var(--vault-border);
+  border-radius: var(--vault-radius-md);
+  padding: 3px;
+  gap: 2px;
+}
+
+.theme-toggle-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  border-radius: var(--vault-radius-sm);
+  font-size: 16px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  transition: background 0.2s var(--ease-vault-smooth), transform 0.15s var(--ease-vault-spring);
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dark .theme-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.theme-toggle-btn.active {
+  background: var(--vault-bg-card);
+  box-shadow: var(--vault-shadow-sm);
+  border: 1px solid var(--vault-border-strong);
+}
+
+.sidebar__logout {
+  width: 100%;
+  color: var(--vault-text-secondary);
+}
+
+.sidebar__logout:hover {
+  color: var(--vault-error) !important;
+  background: var(--vault-error-bg) !important;
+}

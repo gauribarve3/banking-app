@@ -1,0 +1,233 @@
+.fraud-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  animation: fadeIn 200ms ease both;
+}
+
+.fraud-modal {
+  width: 100%;
+  max-width: 520px;
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(220, 38, 38, 0.2), 0 0 0 1px rgba(220, 38, 38, 0.15);
+  animation: scaleIn 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Header */
+.fraud-modal__header {
+  background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+  padding: var(--space-6);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.fraud-modal__header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 20px,
+    rgba(0,0,0,0.05) 20px,
+    rgba(0,0,0,0.05) 40px
+  );
+}
+
+.fraud-modal__icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  margin-bottom: var(--space-3);
+  animation: pulse 2s infinite;
+  position: relative;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.2); }
+  50% { box-shadow: 0 0 0 12px rgba(255, 255, 255, 0); }
+}
+
+.fraud-modal__title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 var(--space-2);
+  position: relative;
+}
+
+.fraud-modal__subtitle {
+  font-size: var(--font-size-sm);
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+  position: relative;
+  line-height: 1.5;
+}
+
+/* Warning items */
+.fraud-warnings {
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fraud-warning-item {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: #FEF2F2;
+  border: 1px solid rgba(220, 38, 38, 0.15);
+  border-radius: var(--radius-md);
+  animation: fadeInUp 400ms ease both;
+}
+
+.fraud-warning-item:nth-child(2) { animation-delay: 100ms; }
+.fraud-warning-item:nth-child(3) { animation-delay: 200ms; }
+
+.fraud-warning-item__badge {
+  font-size: 24px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.fraud-warning-item__content strong {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: #991B1B;
+  margin-bottom: 2px;
+}
+
+.fraud-warning-item__content p {
+  font-size: var(--font-size-xs);
+  color: #7F1D1D;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Acknowledgement */
+.fraud-acknowledge {
+  padding: 0 var(--space-6) var(--space-5);
+}
+
+.fraud-acknowledge__info {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: #FFFBEB;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.fraud-acknowledge__info svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-warning);
+}
+
+.fraud-acknowledge__input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.05em;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.fraud-acknowledge__input:focus {
+  border-color: var(--color-warning);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+.fraud-acknowledge__progress {
+  height: 4px;
+  background: var(--color-border-light);
+  border-radius: 2px;
+  margin-top: var(--space-2);
+  overflow: hidden;
+}
+
+.fraud-acknowledge__progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #F59E0B, #0D9668);
+  border-radius: 2px;
+  transition: width 0.15s ease;
+}
+
+/* Actions */
+.fraud-modal__actions {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+.fraud-btn {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  min-height: 42px;
+}
+
+.fraud-btn--cancel {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.fraud-btn--cancel:hover {
+  background: var(--color-surface-hover);
+}
+
+.fraud-btn--proceed {
+  background: linear-gradient(135deg, #DC2626, #991B1B);
+  color: #ffffff;
+}
+
+.fraud-btn--proceed:hover:not(:disabled) {
+  background: linear-gradient(135deg, #B91C1C, #7F1D1D);
+}
+
+.fraud-btn--proceed:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fraud-btn__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}

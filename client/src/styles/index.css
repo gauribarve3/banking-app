@@ -1,0 +1,401 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ---- VAULT Color Palette ---- */
+  --vault-bg-primary:     #F7F6F3;    /* Warm parchment — main app background */
+  --vault-bg-secondary:   #EFEDE8;    /* Slightly deeper warm — sidebar, panels */
+  --vault-bg-card:        #FFFFFF;    /* Pure white reserved ONLY for card surfaces */
+  --vault-bg-input:       #FAF9F7;    /* Input field background */
+  --vault-border:         #E8E4DC;    /* Warm gray border */
+  --vault-border-strong:  #D4CFC5;    /* Emphasized borders, dividers */
+
+  --vault-text-primary:   #1C1917;    /* Stone-950 variant — main body text */
+  --vault-text-secondary: #57534E;    /* Stone-600 — descriptions, metadata */
+  --vault-text-muted:     #A8A29E;    /* Stone-400 — placeholders, disabled */
+  --vault-text-inverse:   #F7F6F3;    /* On dark surfaces */
+
+  /* ---- Role-Differentiated Chrome System ---- */
+  /* ADMIN CHROME — "Midnight Indigo" */
+  --admin-accent:         #4338CA;    /* Indigo-700 */
+  --admin-accent-light:   #EEF2FF;    /* Indigo-50 */
+  --admin-accent-mid:     #6366F1;    /* Indigo-500 */
+  --admin-accent-dark:    #312E81;    /* Indigo-900 */
+  --admin-header-stripe:  linear-gradient(135deg, #4338CA 0%, #6366F1 100%);
+
+  /* CUSTOMER CHROME — "Ocean Slate" */
+  --customer-accent:      #0369A1;    /* Sky-700 */
+  --customer-accent-light: #F0F9FF;   /* Sky-50 */
+  --customer-accent-mid:  #0EA5E9;    /* Sky-500 */
+  --customer-accent-dark: #075985;    /* Sky-800 */
+  --customer-header-stripe: linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%);
+
+  /* STAFF / OPERATIONS CHROME — "Sage Teal" */
+  --staff-accent:         #0D9488;    /* Teal-600 */
+  --staff-accent-light:   #F0FDFA;    /* Teal-50 */
+  --staff-accent-mid:     #14B8A6;    /* Teal-500 */
+  --staff-accent-dark:    #0F766E;    /* Teal-700 */
+  --staff-header-stripe:  linear-gradient(135deg, #0D9488 0%, #14B8A6 100%);
+
+  /* ---- Status Semantic Tokens ---- */
+  --vault-success:        #15803D;    /* Green-700 */
+  --vault-success-bg:     #F0FDF4;    /* Green-50 */
+  --vault-warning:        #B45309;    /* Amber-700 */
+  --vault-warning-bg:     #FFFBEB;    /* Amber-50 */
+  --vault-error:          #B91C1C;    /* Red-700 */
+  --vault-error-bg:       #FEF2F2;    /* Red-50 */
+  --vault-info:           #1D4ED8;    /* Blue-700 */
+  --vault-info-bg:        #EFF6FF;    /* Blue-50 */
+
+  /* ---- Map backwards compatibility variables ---- */
+  --color-bg:             var(--vault-bg-primary);
+  --color-surface:        var(--vault-bg-card);
+  --color-surface-hover:  var(--vault-bg-secondary);
+  --color-border:         var(--vault-border);
+  --color-border-light:   var(--vault-border-strong);
+  
+  --color-text-primary:   var(--vault-text-primary);
+  --color-text-secondary: var(--vault-text-secondary);
+  --color-text-tertiary:  var(--vault-text-muted);
+
+  --color-accent:         var(--customer-accent);
+  --color-accent-hover:   var(--customer-accent-mid);
+  --color-accent-light:   var(--customer-accent-light);
+
+  --color-danger:         var(--vault-error);
+  --color-danger-light:   var(--vault-error-bg);
+  --color-danger-hover:   var(--vault-error);
+
+  --color-warning:        var(--vault-warning);
+  --color-warning-light:  var(--vault-warning-bg);
+
+  --color-info:           var(--vault-info);
+  --color-info-light:     var(--vault-info-bg);
+
+  /* ---- Typography ---- */
+  --font-family:          'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-xs:         0.75rem;    /* 12px */
+  --font-size-sm:         0.8125rem;  /* 13px */
+  --font-size-base:       0.875rem;   /* 14px */
+  --font-size-md:         1rem;       /* 16px */
+  --font-size-lg:         1.125rem;   /* 18px */
+  --font-size-xl:         1.25rem;    /* 20px */
+  --font-size-2xl:        1.5rem;     /* 24px */
+  --font-size-3xl:        2rem;       /* 32px */
+  --font-size-hero:       2.5rem;     /* 40px */
+
+  /* Font Scales */
+  --font-display-xl:     clamp(2.5rem, 5vw, 4rem);
+  --font-display-lg:     clamp(1.875rem, 4vw, 2.75rem);
+  --font-heading-md:     1.5rem;
+  --font-heading-sm:     1.25rem;
+  --font-body-lg:        1.0625rem;
+  --font-body-md:        0.9375rem;
+  --font-label:          0.8125rem;
+  --font-mono-data:      0.875rem;
+
+  /* ---- Spacing ---- */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ---- Radii ---- */
+  --radius-sm:  var(--vault-radius-sm);
+  --radius-md:  var(--vault-radius-md);
+  --radius-lg:  var(--vault-radius-lg);
+  --radius-xl:  var(--vault-radius-xl);
+  --radius-2xl: var(--vault-radius-2xl);
+  --radius-full: var(--vault-radius-full);
+
+  --vault-radius-sm:     8px;
+  --vault-radius-md:     12px;
+  --vault-radius-lg:     16px;
+  --vault-radius-xl:     24px;
+  --vault-radius-2xl:    32px;
+  --vault-radius-full:   9999px;
+
+  /* ---- Shadows ---- */
+  --shadow-xs:   var(--vault-shadow-sm);
+  --shadow-card: var(--vault-shadow-card);
+  --shadow-md:   var(--vault-shadow-md);
+  --shadow-lg:   var(--vault-shadow-lg);
+  
+  --vault-shadow-sm:     0 1px 3px rgba(28, 25, 23, 0.06), 0 1px 2px rgba(28, 25, 23, 0.04);
+  --vault-shadow-md:     0 4px 16px rgba(28, 25, 23, 0.08), 0 2px 6px rgba(28, 25, 23, 0.05);
+  --vault-shadow-lg:     0 12px 40px rgba(28, 25, 23, 0.10), 0 4px 12px rgba(28, 25, 23, 0.06);
+  --vault-shadow-card:   0 2px 8px rgba(28, 25, 23, 0.07);
+
+  /* ---- Motion Curves ---- */
+  --ease-vault-enter:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-vault-exit:     cubic-bezier(0.4, 0, 1, 1);
+  --ease-vault-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-vault-smooth:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  --transition-fast:   150ms var(--ease-vault-smooth);
+  --transition-base:   200ms var(--ease-vault-smooth);
+  --transition-smooth: 300ms var(--ease-vault-enter);
+
+  /* ---- Layout ---- */
+  --sidebar-width: 240px;
+  --topbar-height: 64px;
+}
+
+/* ============================================================
+   Reset & Base
+   ============================================================ */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ============================================================
+   Scrollbar Styling
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* ============================================================
+   Utility Classes
+   ============================================================ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ============================================================
+   Animations
+   ============================================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-smooth) both;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp var(--transition-smooth) both;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft var(--transition-smooth) both;
+}
+
+/* ============================================================
+   VAULT Design System — Core Animations & Interaction Classes
+   ============================================================ */
+
+/* Staggered entrance animation protocol */
+.vault-appear {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: vaultReveal var(--duration, 0.6s) var(--ease-vault-enter) var(--delay, 0ms) forwards;
+}
+
+@keyframes vaultReveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Card lift hover state */
+.vault-card {
+  transition: transform 0.25s var(--ease-vault-spring), 
+              box-shadow 0.25s var(--ease-vault-smooth),
+              border-color 0.25s var(--ease-vault-smooth);
+}
+
+.vault-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--vault-shadow-lg);
+  border-color: var(--vault-border-strong);
+}
+
+/* Button micro-interaction spring click */
+.vault-btn {
+  transition: transform 0.15s var(--ease-vault-spring),
+              background-color 0.2s var(--ease-vault-smooth),
+              box-shadow 0.2s var(--ease-vault-smooth);
+}
+
+.vault-btn:hover {
+  transform: translateY(-1px);
+}
+
+.vault-btn:active {
+  transform: translateY(0px) scale(0.98);
+}
+
+/* Skeleton Loading Shimmering states */
+.vault-skeleton {
+  background: linear-gradient(90deg, #F0EDE8 25%, #E8E3DC 50%, #F0EDE8 75%);
+  background-size: 200% 100%;
+  animation: vaultShimmer 1.4s ease-in-out infinite;
+  border-radius: var(--vault-radius-sm);
+}
+
+@keyframes vaultShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Monospace text style for absolute precision on financial numbers */
+.font-mono-data {
+  font-family: 'JetBrains Mono', monospace !important;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+}
+
+/* Utility to ensure correct styling of all pages under VAULT guidelines */
+body {
+  background-color: var(--vault-bg-primary) !important;
+  color: var(--vault-text-primary) !important;
+}
+
+.card, .ui-card {
+  background-color: var(--vault-bg-card) !important;
+  border: 1px solid var(--vault-border) !important;
+  border-radius: var(--vault-radius-lg) !important;
+  box-shadow: var(--vault-shadow-card) !important;
+}
+
+/* ============================================================
+   VAULT Design System — Dark Mode Overrides
+   ============================================================ */
+
+.dark {
+  --vault-bg-primary:     #0D0C0A;    /* Deep slate neutral — primary app bg */
+  --vault-bg-secondary:   #171614;    /* Slightly lighter deep slate — panels/sidebar */
+  --vault-bg-card:        #1E1C1A;    /* Card surface - raised */
+  --vault-bg-input:       #171614;    /* Input fields */
+  --vault-border:         #2B2824;    /* Dark warm border */
+  --vault-border-strong:  #3D3934;    /* Strong borders */
+
+  --vault-text-primary:   #F7F6F3;    /* Main text */
+  --vault-text-secondary: #A8A29E;    /* Subtext/metadata */
+  --vault-text-muted:     #78716C;    /* Placeholders/disabled */
+  --vault-text-inverse:   #1C1917;    /* Stone-950 on light surfaces */
+
+  --vault-shadow-sm:      0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --vault-shadow-md:      0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --vault-shadow-lg:      0 12px 40px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.4);
+  --vault-shadow-card:    0 2px 8px rgba(0, 0, 0, 0.25);
+
+  /* Role accent overrides for dark mode readability */
+  --admin-accent-light:   rgba(67, 56, 202, 0.15);
+  --customer-accent-light: rgba(3, 105, 161, 0.15);
+  --staff-accent-light:   rgba(13, 148, 136, 0.15);
+
+  --vault-success-bg:     rgba(21, 128, 61, 0.15);
+  --vault-warning-bg:     rgba(180, 83, 9, 0.15);
+  --vault-error-bg:       rgba(185, 28, 28, 0.15);
+  --vault-info-bg:        rgba(29, 78, 216, 0.15);
+}
+
+.dark .vault-skeleton {
+  background: linear-gradient(90deg, #1E1C1A 25%, #2B2824 50%, #1E1C1A 75%);
+}
+
+

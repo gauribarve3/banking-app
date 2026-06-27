@@ -1,0 +1,133 @@
+/* ============================================================
+   VAULT DashboardLayout — Structure, Header Bar & Shimmer
+   ============================================================ */
+
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--vault-bg-primary);
+}
+
+.dashboard-layout__main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header Bar Styling */
+.vault-header {
+  height: var(--topbar-height);
+  background: var(--vault-bg-card);
+  border-bottom: 1px solid var(--vault-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-8);
+  position: relative;
+}
+
+/* Role Identity Stripe (3px top border) */
+.vault-header.stripe-admin {
+  border-top: 3px solid #4338CA;
+}
+
+.vault-header.stripe-customer {
+  border-top: 3px solid #0369A1;
+}
+
+.vault-header.stripe-employee {
+  border-top: 3px solid #0D9488;
+}
+
+.vault-header__portal-name {
+  font-size: var(--font-heading-sm);
+  font-weight: 700;
+  color: var(--vault-text-primary);
+  letter-spacing: -0.015em;
+}
+
+.vault-header__right {
+  display: flex;
+  align-items: center;
+}
+
+.vault-header__user-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-body-md);
+  color: var(--vault-text-secondary);
+}
+
+.vault-header__status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--vault-success);
+  border-radius: var(--radius-full);
+  display: inline-block;
+  box-shadow: 0 0 8px var(--vault-success);
+  animation: pulse-dot 2.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.4);
+  }
+  70% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 6px rgba(21, 128, 61, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(21, 128, 61, 0);
+  }
+}
+
+.dashboard-layout__content {
+  flex: 1;
+  padding: var(--space-8) var(--space-10);
+  max-width: 1280px;
+  width: 100%;
+}
+
+/* Loading screen */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--vault-bg-primary);
+}
+
+.loading-screen__spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--vault-border);
+  border-top-color: var(--customer-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.vault-header__theme-toggle {
+  font-size: 18px;
+  cursor: pointer;
+  background: var(--vault-bg-secondary);
+  border: 1px solid var(--vault-border);
+  border-radius: var(--vault-radius-full);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s var(--ease-vault-smooth), transform 0.15s var(--ease-vault-spring);
+  margin-right: var(--space-2);
+}
+
+.vault-header__theme-toggle:hover {
+  background: var(--vault-border-strong);
+  transform: scale(1.05);
+}
+

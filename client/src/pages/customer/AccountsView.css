@@ -1,0 +1,96 @@
+.account-tabs {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.account-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.account-tab:hover {
+  border-color: var(--color-text-tertiary);
+}
+
+.account-tab--active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-muted);
+}
+
+.account-tab__type {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+}
+
+.account-tab__balance {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+}
+
+.account-tab__num {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+/* Account detail card */
+.account-detail {
+  margin-bottom: var(--space-6);
+}
+
+.account-detail__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.account-detail__label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.account-detail__balance {
+  font-size: var(--font-size-hero);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+  margin-top: var(--space-2);
+}
+
+.account-detail__meta {
+  text-align: right;
+}
+
+.account-detail__num-label {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  margin-bottom: 2px;
+}
+
+.account-detail__num {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+}
