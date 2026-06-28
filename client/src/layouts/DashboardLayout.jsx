@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ChatBubble from '../components/ChatBubble';
 import { useAuth } from '../hooks/useAuth';
+import { socket } from '../api/socket';
 import './DashboardLayout.css';
 
 export default function DashboardLayout() {
@@ -11,6 +12,16 @@ export default function DashboardLayout() {
   const [theme, setTheme] = useState(() => {
     return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
   });
+
+  useEffect(() => {
+    if (user?._id) {
+      socket.connect();
+      socket.emit('join_room', `user:${user._id}`);
+    }
+    return () => {
+      socket.disconnect();
+    };
+  }, [user]);
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';

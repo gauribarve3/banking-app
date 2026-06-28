@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../api/client';
+import { socket } from '../../api/socket';
 import { Doughnut, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
 import StatCard from '../../components/ui/StatCard';
@@ -21,6 +22,9 @@ export default function CustomerDashboard() {
   const [transactions, setTransactions] = useState([]);
   const [poc, setPoc] = useState(null);
   const [creditCard, setCreditCard] = useState(null);
+  const [mandates, setMandates] = useState([]);
+  const [warnings, setWarnings] = useState([]);
+  const [summaryData, setSummaryData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Interactive modal states
@@ -32,19 +36,143 @@ export default function CustomerDashboard() {
 
   const fetchData = async () => {
     try {
-      const [accRes, txRes] = await Promise.all([
+      const [accRes, txRes, mandateRes, summaryRes] = await Promise.all([
         apiClient.get('/customer/accounts'),
         apiClient.get('/customer/transactions'),
+        apiClient.get('/customer/mandates'),
+        apiClient.get('/customer/transactions/summary')
       ]);
       setAccounts(accRes.data.accounts || []);
       setPoc(accRes.data.poc || null);
       setCreditCard(accRes.data.creditCard || null);
       setTransactions(txRes.data.transactions || []);
+      const mands = mandateRes.data.mandates || [];
+      setMandates(mands);
+      setSummaryData(summaryRes.data.monthlySummary || {});
+
+      // Analyze warnings
+      const calculatedWarnings = analyzeWarnings(
+        accRes.data.accounts || [],
+        txRes.data.transactions || [],
+        mands,
+        accRes.data.creditCard || null
+      );
+      setWarnings(calculatedWarnings);
     } catch (err) {
       console.error('Dashboard fetch error:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    const handleStatusUpdate = ({ transaction }) => {
+      setTransactions(prev => {
+        const idx = prev.findIndex(t => t._id === transaction._id);
+        if (idx !== -1) {
+          const updated = [...prev];
+          updated[idx] = transaction;
+          return updated;
+        } else {
+          return [transaction, ...prev];
+        }
+      });
+      fetchData();
+    };
+
+    socket.on('transaction:status_update', handleStatusUpdate);
+
+    return () => {
+      socket.off('transaction:status_update', handleStatusUpdate);
+    };
+  }, []);
+
+  const analyzeWarnings = (accs, txs, mands, card) => {
+    const list = [];
+    const now = new Date();
+
+    // 1. Credit Card warnings
+    if (card) {
+      if (card.status === 'frozen') {
+        list.push({
+          type: 'danger',
+          icon: '❄️',
+          title: 'Credit Card Frozen',
+          desc: 'Your credit card has been frozen due to security flags (e.g. a rejected large transfer). Please contact your relationship manager to review and unfreeze.',
+          actionText: 'View Card Hub',
+          actionPath: '/customer/credit-card'
+        });
+      } else if (card.status === 'active' && card.outstandingAmount > 0 && card.dueDate) {
+        const daysLeft = Math.ceil((new Date(card.dueDate) - now) / (1000 * 60 * 60 * 24));
+        if (daysLeft >= 0 && daysLeft <= 2) {
+          list.push({
+            type: 'danger',
+            icon: '⏰',
+            title: 'Credit Card Payment Due Soon',
+            desc: `Your outstanding card balance of ${formatCurrency(card.outstandingAmount)} is due in ${daysLeft === 0 ? 'today' : daysLeft === 1 ? '1 day' : daysLeft + ' days'} (${formatDate(card.dueDate)}). Pay now to prevent 2.5% daily compounding interest escalation.`,
+            actionText: 'Repay Card',
+            actionPath: '/customer/credit-card'
+          });
+        }
+      }
+    }
+
+    // 2. Mandate warnings (arriving in <= 2 days)
+    if (mands && mands.length > 0) {
+      mands.forEach(mand => {
+        if (mand.status === 'active' && mand.nextDeductionDate) {
+          const daysLeft = Math.ceil((new Date(mand.nextDeductionDate) - now) / (1000 * 60 * 60 * 24));
+          if (daysLeft >= 0 && daysLeft <= 2) {
+            list.push({
+              type: 'warning',
+              icon: '🔄',
+              title: `Autopay Mandate Processing Soon`,
+              desc: `Your autopay mandate to ${mand.merchantName} for ${formatCurrency(mand.amount)} is scheduled for execution on ${formatDate(mand.nextDeductionDate)} (${daysLeft === 0 ? 'today' : daysLeft === 1 ? 'tomorrow' : 'in 2 days'}). Ensure your account has sufficient balance.`,
+              actionText: 'Manage Mandates',
+              actionPath: '/customer/mandates'
+            });
+          }
+        }
+        if (mand.status === 'cancelled' && mand.updatedAt) {
+          const hoursAgo = (now - new Date(mand.updatedAt)) / (1000 * 60 * 60);
+          if (hoursAgo >= 0 && hoursAgo <= 24) {
+            list.push({
+              type: 'info',
+              icon: '🚫',
+              title: 'Mandate Revoked',
+              desc: `Your autopay mandate to ${mand.merchantName} has been successfully revoked and cancelled. No future payments will be processed.`,
+              actionText: 'View Mandates',
+              actionPath: '/customer/mandates'
+            });
+          }
+        }
+      });
+    }
+
+    // 3. Negative Transaction actions (rejections within 24 hours)
+    if (txs && txs.length > 0) {
+      txs.forEach(tx => {
+        if (tx.status === 'rejected' && tx.updatedAt) {
+          const hoursAgo = (now - new Date(tx.updatedAt)) / (1000 * 60 * 60);
+          if (hoursAgo >= 0 && hoursAgo <= 24) {
+            const isDeposit = tx.type === 'deposit';
+            const details = isDeposit 
+              ? `deposit request of ${formatCurrency(tx.amount)}` 
+              : `transfer of ${formatCurrency(tx.amount)} to account ${maskAccountNumber(tx.receiverAccountNum)}`;
+            list.push({
+              type: 'danger',
+              icon: '❌',
+              title: `${isDeposit ? 'Deposit' : 'Transfer'} Request Rejected`,
+              desc: `Your recent ${details} was rejected. Reason: ${tx.rejectionReason || 'Compliance review flag'}.`,
+              actionText: 'Transfer Center',
+              actionPath: isDeposit ? '/customer/deposit' : '/customer/transfer'
+            });
+          }
+        }
+      });
+    }
+
+    return list;
   };
 
   useEffect(() => {
@@ -99,6 +227,22 @@ export default function CustomerDashboard() {
           </Button>
         </div>
       </div>
+
+      {/* Usability Warnings List */}
+      {warnings.map((warn, index) => (
+        <div key={index} className={`cc-banner cc-banner--${warn.type === 'danger' ? 'due' : warn.type === 'warning' ? 'applied' : 'eligible'}`} style={{ marginBottom: '16px' }}>
+          <div className="cc-banner__content">
+            <span className="cc-banner__icon">{warn.icon}</span>
+            <div>
+              <h4 className="cc-banner__title">{warn.title}</h4>
+              <p className="cc-banner__desc">{warn.desc}</p>
+            </div>
+          </div>
+          <Button variant={warn.type === 'danger' ? 'primary' : 'secondary'} size="sm" onClick={() => navigate(warn.actionPath)}>
+            {warn.actionText}
+          </Button>
+        </div>
+      ))}
 
       {/* Credit Card Status Banners */}
       {creditCard && creditCard.status === 'eligible' && (
@@ -392,28 +536,6 @@ export default function CustomerDashboard() {
 
         {/* Sidebar Column (Right) */}
         <div className="dashboard-side-col">
-          {/* Quick Actions Panel */}
-          <Card className="quick-actions-card">
-            <h3>Quick Actions</h3>
-            <div className="quick-actions-list">
-              <button className="quick-action-row" onClick={() => navigate('/customer/transfer')}>
-                <div className="quick-action-row__icon">💸</div>
-                <div className="quick-action-row__text">
-                  <span>Send Money</span>
-                  <p>Instant IMPS/NEFT transfers</p>
-                </div>
-              </button>
-
-              <button className="quick-action-row" onClick={() => navigate('/customer/fd-calculator')}>
-                <div className="quick-action-row__icon">🏦</div>
-                <div className="quick-action-row__text">
-                  <span>FD Calculator</span>
-                  <p>Open high-yield Fixed Deposits</p>
-                </div>
-              </button>
-            </div>
-          </Card>
-
           {/* POC Employee Info */}
           {poc && (
             <Card className="poc-card">

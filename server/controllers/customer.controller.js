@@ -706,3 +706,79 @@ exports.getMessages = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
+
+const categorize = (tx) => {
+  const desc = (tx.description || '').toLowerCase();
+  
+  if (desc.includes('food') || desc.includes('restaurant') || desc.includes('swiggy') || desc.includes('zomato') || desc.includes('eats')) {
+    return 'Food';
+  }
+  if (desc.includes('utility') || desc.includes('bill') || desc.includes('power') || desc.includes('electricity') || desc.includes('water') || desc.includes('recharge')) {
+    return 'Utilities';
+  }
+  if (desc.includes('sub') || desc.includes('netflix') || desc.includes('spotify') || desc.includes('prime') || desc.includes('youtube')) {
+    return 'Subscriptions';
+  }
+  if (desc.includes('rent') || desc.includes('house') || desc.includes('flat') || desc.includes('pg')) {
+    return 'Rent';
+  }
+  if (desc.includes('movie') || desc.includes('pvr') || desc.includes('bookmyshow') || desc.includes('entertainment') || desc.includes('game') || desc.includes('play')) {
+    return 'Entertainment';
+  }
+  if (desc.includes('sip') || desc.includes('mutual fund') || desc.includes('stock') || desc.includes('invest') || desc.includes('groww') || desc.includes('zerodha') || desc.includes('fixed deposit') || desc.includes('fd')) {
+    return 'Investments';
+  }
+  
+  return 'Transfers';
+};
+
+// GET /api/customer/transactions/summary
+exports.getTransactionSummary = async (req, res) => {
+  try {
+    const { month } = req.query; // format 'YYYY-MM'
+    const targetDate = month ? new Date(month + '-01') : new Date();
+
+    const startDate = new Date(targetDate.getFullYear(), targetDate.getMonth() - 2, 1);
+    const endDate = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 1);
+
+    const txs = await Transaction.find({
+      $or: [
+        { senderUserId: req.user._id },
+        { receiverUserId: req.user._id }
+      ],
+      status: 'completed',
+      createdAt: { $gte: startDate, $lt: endDate }
+    }).sort({ createdAt: 1 });
+
+    const monthlySummary = {};
+
+    txs.forEach(tx => {
+      const date = new Date(tx.createdAt);
+      const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      
+      if (!monthlySummary[yearMonth]) {
+        monthlySummary[yearMonth] = {
+          Food: 0,
+          Utilities: 0,
+          Subscriptions: 0,
+          Rent: 0,
+          Entertainment: 0,
+          Investments: 0,
+          Transfers: 0
+        };
+      }
+
+      const cat = categorize(tx);
+      monthlySummary[yearMonth][cat] += tx.amount;
+    });
+
+    res.json({
+      success: true,
+      monthlySummary,
+      categories: ['Food', 'Utilities', 'Subscriptions', 'Rent', 'Entertainment', 'Investments', 'Transfers']
+    });
+  } catch (error) {
+    console.error('Get transaction summary error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};

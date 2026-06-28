@@ -1,0 +1,123 @@
+================================================================================
+                           VAULTBANK BANKING PLATFORM
+                          COMPLETE PROJECT DOCUMENTATION
+================================================================================
+
+1. OVERVIEW
+--------------------------------------------------------------------------------
+VaultBank is a full-stack premium commercial banking platform designed for the Indian
+financial ecosystem. The application integrates secure transactional rails, Fixed 
+Deposit (FD) growth simulators, relationship manager approvals, and automated credit
+score calculators. Built on the core philosophy of "Trust through refinement", the 
+entire system delivers a Wise-meets-Linear aesthetic under a custom theme.
+
+2. ARCHITECTURE & TECH STACK
+--------------------------------------------------------------------------------
+- Frontend: React (Vite-powered single page application), Chart.js (for financial
+  analytics and data visualizations), and high-fidelity custom CSS transitions.
+- Backend: Node.js, Express REST API, MongoDB (Mongoose ODM).
+- Authentication: Session-based JWT security combined with Passport Google OAuth 
+  sign-in callback handlers.
+- Scheduling: Automated cron tasks checking daily for mandate deductions.
+- Protection: Strict memory rate-limiting on login/signup routes (max 5 attempts 
+  per 15 min) and request-sanitizing guards blocking NoSQL query injections.
+
+3. DATA MODELS & DATABASE SCHEMA
+--------------------------------------------------------------------------------
+- Branch: Stores branch locations, IFSC codes, and addresses (e.g. Mumbai Central,
+  Delhi Connaught Place, Bengaluru Koramangala).
+- User: Multi-role model containing profile details (name, email, hashed password,
+  role), embedded Accounts sub-schema (accountType, accountNumber, balance, isFrozen),
+  and Credit Card sub-schema (outstandingAmount, availableLimit, cibilScore, status).
+- Transaction: Tracks type ('transfer', 'deposit', 'withdrawal'), amount, sender/
+  receiver details, approval status ('completed', 'pending', 'rejected'), rejection
+  reasoning, and relation-manager references.
+- Message: Represents persistent correspondence history between customer users and
+  their assigned Branch Manager.
+- Mandate: Manages automated payment directives (SIP, subscriptions, utility) including
+  merchants, scheduled amounts, frequency, status ('active', 'paused', 'cancelled'),
+  and next deduction dates.
+
+4. SYSTEM PROFILES & CAPABILITIES
+--------------------------------------------------------------------------------
+
+A. SYSTEM ADMINISTRATOR (admin@vaultbank.com)
+   - Branch Management: Create and monitor physical banking branches across India.
+   - Staff Recruitment: Hire, deactivate, and assign Branch Managers (Employees) to
+     specific branches with salary parameters.
+   - System Audit Log: View active server telemetry logs and customer distribution charts.
+   - Visual Theme: Accentuated in a premium Midnight Indigo styling theme.
+
+B. BRANCH MANAGER / EMPLOYEE (james@vaultbank.com, maria@vaultbank.com)
+   - Relationship Dashboard: Acts as the Point of Contact (POC) for assigned customers.
+   - Transaction Oversight: Review pending transfers over ₹10,000. Approve or reject 
+     them with custom rejection feedback messages.
+   - Deposit Verification: Verify physical deposit requests submitted by customers, 
+     crediting their balances upon approval.
+   - Credit Card Review: Inspect credit card usages of customers, CIBIL metrics, and 
+     toggle card locks.
+   - Communication Hub: Read and reply to customer query messages in real time.
+   - Visual Theme: Accentuated in a premium Sage Teal styling theme.
+
+C. CUSTOMER (alice@email.com, bob@email.com, carol@email.com)
+   - Portfolio Hub: Monitor Savings and Current accounts with JetBrains Mono typography.
+   - Fixed Deposit Hub: Open Fixed Deposits (FDs) with 7.1% interest rates. Test maturity
+     payouts dynamically using the interactive slider growth calculator.
+   - Credit Card Hub: Apply for and manage a premium credit card with 45 interest-free
+     grace days. Lock/unlock cards, check outstanding amounts, and pay off statements.
+   - Automated Mandates: Set up recurring payments (monthly, quarterly, or yearly) 
+     for subscriptions, utility bills, or investment SIPs.
+   - Deposits: Request physical deposits specifying deposit location, date, and amount
+     for manager approval.
+   - Statement Center: Download formatted text statements summarizing all past transfers.
+   - Messaging: Direct channel to send queries to their assigned Branch Manager.
+   - Visual Theme: Accentuated in a premium Ocean Slate styling theme.
+
+5. SECURITY WORKFLOWS & LOGIC RULES
+--------------------------------------------------------------------------------
+- High-Value Transfer Escrow: Any customer money transfer of ₹10,000 or more is placed
+  in a 'pending' state and requires manual review and approval by their Branch Manager.
+- Security Credit Card Freeze: If a Branch Manager rejects a high-value transfer request 
+  equal to or exceeding ₹50,000 due to security flags, the system automatically freezes
+  the customer's credit card and displays a warning to contact management.
+- Compounding Interest: Active credit cards with outstanding balances past the 45-day
+  due date incur a 2.5% daily compounding interest penalty, which displays in their hub.
+- Rate-Limiter Guard: Auth endpoints block brute-force attacks by rejecting requests 
+  exceeding 5 attempts per 15 minutes. General API endpoints limit requests to 300 per 
+  15 minutes.
+- NoSQL Injection Shield: Middleware automatically inspects all body payloads and 
+  strips keys starting with '$' to block MongoDB operator injections.
+- XSS Protection: Automatically sanitizes HTML tags and executable script protocols from
+  all query and param fields.
+- 1MB Content Guard: Rejects request payloads larger than 1MB to prevent memory-bloat DoS.
+
+6. AESTHETICS & INTERACTIVE MOTION
+--------------------------------------------------------------------------------
+- Multipage Separation: The root path (/) renders a premium landing page showing a 
+  centered full-screen fade-out reveal logo, bento offerings, and compounding simulator.
+  The login form is separated on a dedicated card layout at (/login).
+- Cursor Reveal Overlay: The entrance screen reveal stays static to preserve branding 
+  until the user moves their cursor (or touches the screen), at which point it dissolves.
+- Scroll-Reveal: Section features, grids, and simulators slide and fade into the viewport
+  as the user scrolls down, using a custom React Intersection Observer hook.
+- Global Theme Slider: Toggle light mode (Warm Parchment #F7F6F3) and dark mode (Deep Slate 
+  #0D0C0A) using side-by-side Sun/Moon selectors in the sidebars and headers.
+- Font Overrides: Automatic color overrides ensure high-contrast reading (creamy white fonts
+  against dark mode backgrounds, and near-black slate text in light mode).
+- Staggered Load: Cards, tables, and buttons animate sequentially using spring curves 
+  (.vault-appear) to make the banking portal feel responsive, alive, and interactive.
+
+7. PHASE 9.6 ADDITIONAL FEATURES (UPI SIMULATION & RISK CONTEXT)
+--------------------------------------------------------------------------------
+- UPI VPA Transfers: Customers can toggle between standard account number transfers and 
+  UPI VPA transfers. Entering a VPA (e.g. alice@vaultbank) and clicking "Verify" resolves
+  the payee's display name using `GET /api/users/resolve` and verifies it. Under the hood, 
+  it submits the transfer using their primary account number.
+- Behavioral Risk context for managers: When reviewing a pending transaction, managers
+  can expand a details panel ("View Behavioral Risk Context") which fetches metrics via 
+  `GET /api/employee/transactions/:id/risk-context`.
+  - Runs MongoDB aggregation pipeline to compute the sender's 30-day average transaction 
+    amount, max transaction amount, frequency, and time of day distributions.
+  - Warns if the transfer is an "Out-of-Pattern Amount" (>5x their 30-day average).
+  - Flags if the recipient is a "First-Time Payee" (never transferred to them before).
+================================================================================

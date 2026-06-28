@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
 
 import LoginPage from './pages/LoginPage';
+import LandingPage from './pages/LandingPage';
 
 // Customer pages
 import CustomerDashboard from './pages/customer/CustomerDashboard';
@@ -44,7 +45,8 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public route */}
+          {/* Public routes */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
@@ -96,7 +98,7 @@ export default function App() {
           </Route>
 
           {/* Catch-all redirect */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

@@ -398,4 +398,32 @@ body {
   background: linear-gradient(90deg, #1E1C1A 25%, #2B2824 50%, #1E1C1A 75%);
 }
 
+/* Force correct font contrast mapping globally */
+body, h1, h2, h3, h4, h5, h6, p, span, li, label, input, select, textarea, button {
+  color: var(--vault-text-primary);
+}
+
+.text-muted, .text-secondary, p.desc, span.date, .metadata, .subtitle {
+  color: var(--vault-text-secondary) !important;
+}
+
+/* Ensure proper form defaults in both modes */
+input, select, textarea {
+  border-color: var(--vault-border) !important;
+  background-color: var(--vault-bg-input) !important;
+  color: var(--vault-text-primary) !important;
+}
+
+/* Fix table headers and standard elements */
+th {
+  color: var(--vault-text-secondary) !important;
+  background-color: var(--vault-bg-secondary) !important;
+}
+
+td {
+  color: var(--vault-text-primary) !important;
+  border-bottom: 1px solid var(--vault-border) !important;
+}
+
+
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import apiClient from '../api/client';
 import './LoginPage.css';
@@ -18,7 +18,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Theme state
+  // Theme toggle state
   const [theme, setTheme] = useState(() => {
     return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
   });
@@ -33,21 +33,6 @@ export default function LoginPage() {
       document.documentElement.classList.remove('dark');
     }
   };
-
-  // Auth drawer slide state
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  // Growth Simulator Calculator state
-  const [calcPrincipal, setCalcPrincipal] = useState(100000);
-  const [calcYears, setCalcYears] = useState(3);
-  const calcRate = 0.071; // 7.1% standard premium rate
-  const [calcResult, setCalcResult] = useState(0);
-
-  useEffect(() => {
-    // Calculate simple compound interest: A = P(1 + r)^n
-    const total = calcPrincipal * Math.pow(1 + calcRate, calcYears);
-    setCalcResult(Math.round(total));
-  }, [calcPrincipal, calcYears]);
 
   // Login form inputs
   const [loginEmail, setLoginEmail] = useState('');
@@ -78,7 +63,7 @@ export default function LoginPage() {
       const user = await login(loginEmail, loginPassword);
       navigate(roleHome[user.role] || '/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      setError(err.response?.data?.message || 'Login failed. Please verify credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -93,7 +78,7 @@ export default function LoginPage() {
     try {
       const res = await apiClient.post('/auth/signup', signupData);
       if (res.data.success) {
-        setSuccess('Account created! Logging you in...');
+        setSuccess('Account created! Authenticating...');
         const user = await login(signupData.email, signupData.password);
         setTimeout(() => navigate(roleHome[user.role] || '/'), 500);
       }
@@ -112,263 +97,38 @@ export default function LoginPage() {
     setSignupData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Scroll to page section helper
-  const scrollToSection = (id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
-    <div className="landing-page">
-      {/* Sticky Premium Navigation Header */}
-      <nav className="landing-nav">
-        <div className="landing-nav__container">
-          <div className="landing-nav__logo">
+    <div className="login-page">
+      {/* Soft Top-Right Gradient Bloom */}
+      <div className="login-bloom" />
+
+      {/* Mini header to go back */}
+      <header className="login-page__header">
+        <Link to="/" className="login-page__back-link">
+          ← Back to Landing
+        </Link>
+        <button 
+          type="button" 
+          className="login-nav__theme-toggle" 
+          onClick={toggleTheme}
+          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+        >
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+      </header>
+
+      {/* Main card center container */}
+      <div className="login-page__content">
+        <div className="login-card vault-appear" style={{ '--delay': '100ms' }}>
+          
+          <div className="login-card__brand">
             <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
-              <rect width="28" height="28" rx="8" fill="var(--customer-accent)"/>
+              <rect width="28" height="28" rx="8" fill="#0369A1"/>
               <path d="M8 10h12M8 14h12M8 18h8" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
             </svg>
-            <span className="landing-nav__brand-name">VaultBank</span>
+            <h2>VaultBank Portal</h2>
           </div>
 
-          <div className="landing-nav__links">
-            <button type="button" onClick={() => scrollToSection('features')} className="nav-link-btn">Features</button>
-            <button type="button" onClick={() => scrollToSection('calculator')} className="nav-link-btn">Interest Growth</button>
-            <button type="button" onClick={() => scrollToSection('security')} className="nav-link-btn">Security</button>
-          </div>
-
-          <div className="landing-nav__actions">
-            <button 
-              type="button" 
-              className="landing-nav__theme-toggle" 
-              onClick={toggleTheme}
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-            >
-              {theme === 'dark' ? '☀️' : '🌙'}
-            </button>
-            <button 
-              type="button" 
-              className="vault-btn cta-primary-btn"
-              onClick={() => { setIsDrawerOpen(true); setActiveTab('login'); }}
-            >
-              Access Vault
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-section__container">
-          <div className="hero-section__content vault-appear" style={{ '--delay': '100ms' }}>
-            <div className="hero-badge">🔒 SECURE RBI AUTHORIZED ESCROW</div>
-            <h1 className="hero-title">The new standard for wealth precision.</h1>
-            <p className="hero-desc">
-              VaultBank integrates institutional-grade safety with lightning-fast Indian banking rails. Move funds, accumulate interest, and secure credit lines instantly.
-            </p>
-            <div className="hero-ctas">
-              <button 
-                type="button" 
-                className="vault-btn hero-primary-btn" 
-                onClick={() => { setIsDrawerOpen(true); setActiveTab('signup'); }}
-              >
-                Open Account Instantly
-              </button>
-              <button 
-                type="button" 
-                className="vault-btn hero-secondary-btn" 
-                onClick={() => scrollToSection('features')}
-              >
-                Explore Offerings ↓
-              </button>
-            </div>
-
-            {/* Quick Metrics */}
-            <div className="hero-metrics">
-              <div className="metric-item">
-                <span className="metric-num font-mono-data">₹500Cr+</span>
-                <span className="metric-lbl">Monthly Volume</span>
-              </div>
-              <div className="metric-item">
-                <span className="metric-num font-mono-data">7.1%</span>
-                <span className="metric-lbl">FD Interest</span>
-              </div>
-              <div className="metric-item">
-                <span className="metric-num font-mono-data">99.9%</span>
-                <span className="metric-lbl">Core Rails Uptime</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Interactive Live Dashboard Mockup */}
-          <div className="hero-section__visual vault-appear" style={{ '--delay': '300ms' }}>
-            <div className="mockup-frame">
-              <div className="mockup-header">
-                <span className="mockup-dot red"></span>
-                <span className="mockup-dot yellow"></span>
-                <span className="mockup-dot green"></span>
-                <span className="mockup-title">VaultBank Live Dashboard</span>
-              </div>
-              <div className="mockup-body">
-                <div className="mockup-grid">
-                  <div className="mockup-card balance">
-                    <span className="mockup-card-label">SAVINGS ACCOUNT</span>
-                    <strong className="mockup-card-amount font-mono-data">₹3,42,850.75</strong>
-                    <span className="mockup-card-sub text-success">↑ 12% this month</span>
-                  </div>
-                  <div className="mockup-card limit">
-                    <span className="mockup-card-label">PREMIUM CREDIT LIMIT</span>
-                    <strong className="mockup-card-amount font-mono-data">₹10,000.00</strong>
-                    <div className="mockup-progress-bar">
-                      <div className="mockup-progress-fill" style={{ width: '60%' }}></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mockup-transactions">
-                  <span className="mockup-section-title">RECENT TRANSACTIONS</span>
-                  <div className="mockup-tx-row">
-                    <span>Rent Repayment (Mumbai)</span>
-                    <strong className="font-mono-data text-danger">-₹18,500</strong>
-                  </div>
-                  <div className="mockup-tx-row">
-                    <span>FD Interest Payout</span>
-                    <strong className="font-mono-data text-success">+₹2,410</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Bento Section */}
-      <section id="features" className="features-section">
-        <div className="section-header">
-          <h2 className="section-title">Engineered for modern finance</h2>
-          <p className="section-desc">Experience three reference points of visual design: Precision, Warmth, and Hierarchy.</p>
-        </div>
-
-        <div className="bento-grid">
-          {/* Feature 1 */}
-          <div className="bento-card vault-card vault-appear" style={{ '--delay': '100ms' }}>
-            <span className="bento-icon">🛡️</span>
-            <h3>Dynamic Security Keys</h3>
-            <p>Every high-value transfer over ₹10,000 triggers immediate manager oversight and secure CIBIL verification. No unauthorized withdrawals, ever.</p>
-          </div>
-          {/* Feature 2 */}
-          <div className="bento-card vault-card vault-appear" style={{ '--delay': '200ms' }}>
-            <span className="bento-icon">⚡</span>
-            <h3>Indian Rail Consistency</h3>
-            <p>Standardized deposits and payments across Delhi Connaught Place, Mumbai Central, Bengaluru Koramangala, and Hyderabad Banjara Hills.</p>
-          </div>
-          {/* Feature 3 */}
-          <div className="bento-card vault-card vault-appear" style={{ '--delay': '300ms' }}>
-            <span className="bento-icon">💳</span>
-            <h3>45-Day Interest-Free Cards</h3>
-            <p>Elevate your CIBIL score automatically with our Premium Card. Enjoy 45 interest-free days and instant lock capability in the Credit Card Hub.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Simulator Section */}
-      <section id="calculator" className="calculator-section">
-        <div className="calculator-container">
-          <div className="calc-info">
-            <h2 className="section-title">See your wealth compound</h2>
-            <p className="section-desc">
-              VaultBank Fixed Deposits yield up to 7.1% interest. Adjust the principal amount and duration to simulate your growth.
-            </p>
-            <div className="calc-metrics">
-              <div className="calc-metric-box">
-                <span className="calc-metric-lbl">Principal Invested</span>
-                <strong className="font-mono-data">₹{calcPrincipal.toLocaleString('en-IN')}</strong>
-              </div>
-              <div className="calc-metric-box">
-                <span className="calc-metric-lbl">Estimated Returns</span>
-                <strong className="font-mono-data text-accent">₹{calcResult.toLocaleString('en-IN')}</strong>
-              </div>
-            </div>
-          </div>
-
-          <div className="calc-sliders">
-            <div className="slider-group">
-              <div className="slider-label-row">
-                <span>Principal Amount</span>
-                <strong className="font-mono-data">₹{calcPrincipal.toLocaleString('en-IN')}</strong>
-              </div>
-              <input 
-                type="range" 
-                min="10000" 
-                max="1000000" 
-                step="10000" 
-                value={calcPrincipal}
-                onChange={(e) => setCalcPrincipal(parseInt(e.target.value))}
-                className="calc-range-input"
-              />
-            </div>
-
-            <div className="slider-group">
-              <div className="slider-label-row">
-                <span>Investment Period</span>
-                <strong className="font-mono-data">{calcYears} Years</strong>
-              </div>
-              <input 
-                type="range" 
-                min="1" 
-                max="5" 
-                step="1" 
-                value={calcYears}
-                onChange={(e) => setCalcYears(parseInt(e.target.value))}
-                className="calc-range-input"
-              />
-            </div>
-            <p className="calc-note">Calculated at premium composite compounding rate of 7.1% per annum.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Security Section */}
-      <section id="security" className="security-section">
-        <div className="security-container">
-          <div className="security-visual">
-            <div className="vault-lock-motif">
-              <div className="lock-circle">🔒</div>
-              <div className="pulse-ring"></div>
-              <div className="pulse-ring delay-1"></div>
-            </div>
-          </div>
-          <div className="security-text">
-            <h2>Your safety is our absolute priority</h2>
-            <p>
-              We operate under rigorous RBI guidelines. Our automated escrow locks credit lines whenever anomalous high-value transactions are flagged or rejected, ensuring maximum safety for savings and current deposits.
-            </p>
-            <button 
-              type="button" 
-              className="vault-btn security-cta"
-              onClick={() => { setIsDrawerOpen(true); setActiveTab('login'); }}
-            >
-              Sign In to Verify Account Details
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* AUTH SLIDE-OUT DRAWER BACKDROP */}
-      {isDrawerOpen && (
-        <div className="drawer-backdrop" onClick={() => setIsDrawerOpen(false)} />
-      )}
-
-      {/* AUTH SLIDE-OUT DRAWER */}
-      <div className={`auth-drawer ${isDrawerOpen ? 'open' : ''}`}>
-        <div className="drawer-header">
-          <h3>Portal Access</h3>
-          <button type="button" className="drawer-close-btn" onClick={() => setIsDrawerOpen(false)}>✕</button>
-        </div>
-
-        <div className="login-card">
           {/* Tab switcher */}
           <div className="login-tabs">
             <button
@@ -389,7 +149,7 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Error/Success messages */}
+          {/* Alert messages */}
           {error && (
             <div className="login-alert login-alert--error">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -414,7 +174,7 @@ export default function LoginPage() {
             <form className="login-form" onSubmit={handleLogin}>
               <div className="login-form__header">
                 <h2>Welcome back</h2>
-                <p>Sign in to access your secure portal</p>
+                <p>Enter your credentials to access your banking profile</p>
               </div>
 
               <div className="login-form__fields">
@@ -436,7 +196,7 @@ export default function LoginPage() {
                   <input
                     id="login-password"
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder="Enter password"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     required
@@ -469,8 +229,8 @@ export default function LoginPage() {
           {activeTab === 'signup' && (
             <form className="login-form" onSubmit={handleSignup}>
               <div className="login-form__header">
-                <h2>Create your account</h2>
-                <p>Register Savings & Current accounts instantly</p>
+                <h2>Create account</h2>
+                <p>Open Savings and Current accounts with us</p>
               </div>
 
               <div className="login-form__fields">

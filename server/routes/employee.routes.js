@@ -13,6 +13,7 @@ const {
   getReceivedMessages,
   replyMessage,
   sendCustomerMessage,
+  getTransactionRiskContext,
 } = require('../controllers/employee.controller');
 
 router.use(auth, authorize('employee'));
@@ -20,6 +21,7 @@ router.use(auth, authorize('employee'));
 router.get('/customers', getBranchCustomers);
 router.get('/customers/:id/ledger', getCustomerLedger);
 router.get('/pending', getPendingTransactions);
+router.get('/transactions/:id/risk-context', getTransactionRiskContext);
 router.patch('/transactions/:id', resolveTransaction);
 router.patch('/customers/:id/freeze', toggleAccountFreeze);
 

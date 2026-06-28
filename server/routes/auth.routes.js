@@ -9,8 +9,10 @@ const {
   googleCallback,
 } = require('../controllers/auth.controller');
 
-router.post('/login', login);
-router.post('/signup', signup);
+const { authRateLimiter } = require('../middleware/rateLimiter');
+
+router.post('/login', authRateLimiter, login);
+router.post('/signup', authRateLimiter, signup);
 router.get('/me', auth, getMe);
 router.patch('/change-password', auth, changePassword);
 

@@ -127,6 +127,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    vpa: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
   },
   {
     timestamps: true,
@@ -142,6 +147,23 @@ userSchema.index(
     } 
   }
 );
+
+// Pre-save hook to generate a clean, unique customer VPA
+userSchema.pre('save', async function (next) {
+  if (this.role === 'customer' && !this.vpa) {
+    const baseVpa = `${this.firstName.toLowerCase()}.${this.lastName.toLowerCase()}`.replace(/[^a-z0-9.]/g, '');
+    let candidate = `${baseVpa}@vaultbank`;
+    let exists = await mongoose.models.User.findOne({ vpa: candidate });
+    let counter = 1;
+    while (exists) {
+      candidate = `${baseVpa}${counter}@vaultbank`;
+      exists = await mongoose.models.User.findOne({ vpa: candidate });
+      counter++;
+    }
+    this.vpa = candidate;
+  }
+  next();
+});
 
 // Virtual: full name
 userSchema.virtual('fullName').get(function () {

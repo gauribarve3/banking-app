@@ -17,12 +17,14 @@ const {
   repayCreditCard,
   sendMessage,
   getMessages,
+  getTransactionSummary,
 } = require('../controllers/customer.controller');
 
 router.use(auth, authorize('customer'));
 
 router.get('/accounts', getAccounts);
 router.get('/transactions', getTransactions);
+router.get('/transactions/summary', getTransactionSummary);
 router.get('/profile', getProfile);
 router.patch('/profile', updateProfile);
 router.post('/transfer', fraudCheck, initiateTransfer);

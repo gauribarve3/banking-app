@@ -21,6 +21,32 @@ export default function TransferPage() {
   const [fraudWarnings, setFraudWarnings] = useState(null);
   const [pendingTransferData, setPendingTransferData] = useState(null);
 
+  // VPA UPI States
+  const [transferType, setTransferType] = useState('vpa'); // 'vpa' or 'account'
+  const [toVpa, setToVpa] = useState('');
+  const [resolvedName, setResolvedName] = useState('');
+  const [vpaError, setVpaError] = useState('');
+  const [isResolving, setIsResolving] = useState(false);
+
+  const handleVpaResolve = async () => {
+    if (!toVpa.trim()) return;
+    setIsResolving(true);
+    setVpaError('');
+    setResolvedName('');
+    try {
+      const res = await apiClient.get(`/users/resolve?vpa=${toVpa.trim().toLowerCase()}`);
+      if (res.data.success) {
+        setResolvedName(res.data.name);
+        setToAccount(res.data.accountNumber);
+      }
+    } catch (err) {
+      setVpaError(err.response?.data?.message || 'Failed to resolve VPA.');
+      setToAccount('');
+    } finally {
+      setIsResolving(false);
+    }
+  };
+
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
@@ -39,7 +65,17 @@ export default function TransferPage() {
   const validate = () => {
     const errs = {};
     if (!fromAccount) errs.from = 'Select a source account.';
-    if (!toAccount.trim()) errs.to = 'Enter recipient account number.';
+    
+    if (transferType === 'vpa') {
+      if (!toVpa.trim()) {
+        errs.to = 'VPA is required.';
+      } else if (!resolvedName) {
+        errs.to = 'Please verify the recipient VPA first.';
+      }
+    } else {
+      if (!toAccount.trim()) errs.to = 'Enter recipient account number.';
+    }
+
     if (!amount || parseFloat(amount) <= 0) errs.amount = 'Enter a valid amount.';
 
     const selectedAcc = accounts.find((a) => a.accountNumber === fromAccount);
@@ -48,7 +84,9 @@ export default function TransferPage() {
       if (parseFloat(amount) > selectedAcc.balance) errs.amount = 'Insufficient funds.';
     }
 
-    if (fromAccount === toAccount.trim()) errs.to = 'Cannot transfer to the same account.';
+    if (toAccount && fromAccount === toAccount.trim()) {
+      errs.to = 'Cannot transfer to the same account.';
+    }
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -75,6 +113,8 @@ export default function TransferPage() {
       } else {
         setResult(res.data);
         setToAccount('');
+        setToVpa('');
+        setResolvedName('');
         setAmount('');
         setDescription('');
       }
@@ -96,6 +136,8 @@ export default function TransferPage() {
       });
       setResult(res.data);
       setToAccount('');
+      setToVpa('');
+      setResolvedName('');
       setAmount('');
       setDescription('');
     } catch (err) {
@@ -148,15 +190,82 @@ export default function TransferPage() {
               {errors.from && <span className="input-group__error">{errors.from}</span>}
             </div>
 
-            {/* To Account */}
-            <Input
-              id="to-account"
-              label="Recipient Account Number"
-              placeholder="e.g. ACC-7F3A2B"
-              value={toAccount}
-              onChange={(e) => setToAccount(e.target.value)}
-              error={errors.to}
-            />
+            {/* Transfer Type Tabs */}
+            <div className="login-tabs" style={{ marginBottom: '20px' }}>
+              <button
+                type="button"
+                className={`login-tab ${transferType === 'vpa' ? 'login-tab--active' : ''}`}
+                onClick={() => {
+                  setTransferType('vpa');
+                  setToAccount('');
+                  setErrors({});
+                }}
+              >
+                UPI VPA Transfer
+              </button>
+              <button
+                type="button"
+                className={`login-tab ${transferType === 'account' ? 'login-tab--active' : ''}`}
+                onClick={() => {
+                  setTransferType('account');
+                  setToAccount('');
+                  setErrors({});
+                }}
+              >
+                Bank Account Number
+              </button>
+              <div
+                className="login-tab__indicator"
+                style={{ transform: `translateX(${transferType === 'account' ? '100%' : '0'})` }}
+              />
+            </div>
+
+            {/* Recipient Input details */}
+            {transferType === 'vpa' ? (
+              <div className="input-group" style={{ marginBottom: '20px' }}>
+                <label className="input-group__label" htmlFor="to-vpa">Recipient VPA (UPI Handle)</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    id="to-vpa"
+                    type="text"
+                    className="transfer-select"
+                    placeholder="e.g. bob.williams@vaultbank"
+                    value={toVpa}
+                    onChange={(e) => {
+                      setToVpa(e.target.value);
+                      setResolvedName('');
+                      setToAccount('');
+                      setVpaError('');
+                    }}
+                    style={{ flex: 1, padding: '10px 14px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg-secondary)', color: 'var(--color-text-primary)' }}
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleVpaResolve}
+                    isLoading={isResolving}
+                  >
+                    Verify
+                  </Button>
+                </div>
+                {errors.to && <span className="input-group__error" style={{ color: 'var(--vault-error)' }}>{errors.to}</span>}
+                {vpaError && <span className="input-group__error" style={{ color: 'var(--vault-error)' }}>{vpaError}</span>}
+                {resolvedName && (
+                  <div className="vpa-verified-badge" style={{ marginTop: '8px', padding: '6px 10px', borderRadius: '4px', background: 'rgba(21, 128, 61, 0.08)', color: 'var(--vault-success)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700' }}>
+                    <span>✓ Verified Payee: <strong>{resolvedName}</strong></span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Input
+                id="to-account"
+                label="Recipient Account Number"
+                placeholder="e.g. 909012340003"
+                value={toAccount}
+                onChange={(e) => setToAccount(e.target.value)}
+                error={errors.to}
+              />
+            )}
 
             {/* Amount */}
             <Input
@@ -210,7 +319,9 @@ export default function TransferPage() {
               </div>
               <div className="transfer-summary__row">
                 <span className="transfer-summary__label">To</span>
-                <span className="transfer-summary__value">{toAccount || '—'}</span>
+                <span className="transfer-summary__value">
+                  {transferType === 'vpa' && resolvedName ? `${resolvedName} (${toVpa})` : toAccount || '—'}
+                </span>
               </div>
               <div className="transfer-summary__row">
                 <span className="transfer-summary__label">Amount</span>

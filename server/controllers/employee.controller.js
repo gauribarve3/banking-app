@@ -273,6 +273,15 @@ exports.resolveTransaction = async (req, res) => {
       .populate('receiverUserId', 'firstName lastName')
       .populate('approvedBy', 'firstName lastName');
 
+    // Emit real-time status update to both parties
+    const io = req.app.get('io');
+    if (populatedTx.senderUserId) {
+      io.to('user:' + populatedTx.senderUserId._id).emit('transaction:status_update', { transaction: populatedTx });
+    }
+    if (populatedTx.receiverUserId) {
+      io.to('user:' + populatedTx.receiverUserId._id).emit('transaction:status_update', { transaction: populatedTx });
+    }
+
     res.json({
       success: true,
       message: `Transaction ${action}d successfully.`,
@@ -433,6 +442,9 @@ exports.replyMessage = async (req, res) => {
     message.isReplied = true;
     await message.save();
 
+    // Emit real-time message update to customer
+    req.app.get('io').to('user:' + message.senderUserId).emit('message:received', { message });
+
     res.json({ success: true, message: 'Reply submitted successfully.', data: message });
   } catch (error) {
     console.error('Reply message error:', error);
@@ -497,9 +509,126 @@ exports.sendCustomerMessage = async (req, res) => {
       messageText: messageText.trim(),
     });
 
+    // Emit real-time message update to customer
+    req.app.get('io').to('user:' + customer._id).emit('message:received', { message: newMessage });
+
     res.status(201).json({ success: true, message: 'Message sent to customer successfully.', data: newMessage });
   } catch (error) {
     console.error('Send customer message error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// GET /api/employee/transactions/:id/risk-context
+exports.getTransactionRiskContext = async (req, res) => {
+  try {
+    const transaction = await Transaction.findById(req.params.id);
+    if (!transaction) {
+      return res.status(404).json({ success: false, message: 'Transaction not found.' });
+    }
+
+    const customerId = transaction.senderUserId;
+    if (!customerId) {
+      return res.status(400).json({ success: false, message: 'Transaction has no sender.' });
+    }
+
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    // 1. Core historical aggregation
+    const statsArray = await Transaction.aggregate([
+      {
+        $match: {
+          senderUserId: customerId,
+          status: 'completed',
+          createdAt: { $gte: thirtyDaysAgo }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          avgAmount: { $avg: '$amount' },
+          maxAmount: { $max: '$amount' },
+          txCount: { $sum: 1 },
+          uniqueRecipients: { $addToSet: '$receiverAccountNum' }
+        }
+      }
+    ]);
+
+    const stats = statsArray[0] || {
+      avgAmount: 0,
+      maxAmount: 0,
+      txCount: 0,
+      uniqueRecipients: []
+    };
+
+    // 2. Transaction times distribution
+    const timeDistribution = await Transaction.aggregate([
+      {
+        $match: {
+          senderUserId: customerId,
+          status: 'completed',
+          createdAt: { $gte: thirtyDaysAgo }
+        }
+      },
+      {
+        $project: {
+          hour: { $hour: '$createdAt' }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $and: [{ $gte: ['$hour', 6] }, { $lt: ['$hour', 12] }] }, 'Morning (6am-12pm)',
+              { $cond: [
+                { $and: [{ $gte: ['$hour', 12] }, { $lt: ['$hour', 17] }] }, 'Afternoon (12pm-5pm)',
+                { $cond: [
+                  { $and: [{ $gte: ['$hour', 17] }, { $lt: ['$hour', 21] }] }, 'Evening (5pm-9pm)',
+                  'Night (9pm-6am)'
+                ]}
+              ]}
+            ]
+          },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Format times into a clean object
+    const times = {
+      'Morning (6am-12pm)': 0,
+      'Afternoon (12pm-5pm)': 0,
+      'Evening (5pm-9pm)': 0,
+      'Night (9pm-6am)': 0
+    };
+    timeDistribution.forEach(item => {
+      if (item._id) {
+        times[item._id] = item.count;
+      }
+    });
+
+    // 3. Count past transactions to this specific recipient
+    const previousTransfersCount = await Transaction.countDocuments({
+      senderUserId: customerId,
+      receiverAccountNum: transaction.receiverAccountNum,
+      status: 'completed'
+    });
+
+    res.json({
+      success: true,
+      riskMetrics: {
+        avgAmount30Days: Math.round(stats.avgAmount),
+        maxAmount30Days: stats.maxAmount,
+        txCount30Days: stats.txCount,
+        uniqueRecipients30Days: stats.uniqueRecipients.length,
+        previousTransfersToRecipient: previousTransfersCount,
+        isNewRecipient: previousTransfersCount === 0,
+        timeDistribution: times,
+        weeklyFrequency: parseFloat((stats.txCount / 4.2).toFixed(1))
+      }
+    });
+  } catch (error) {
+    console.error('Get transaction risk context error:', error);
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 };

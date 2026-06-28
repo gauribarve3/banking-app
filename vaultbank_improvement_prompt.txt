@@ -1,0 +1,35 @@
+# VAULTBANK IMPROVEMENT SYSTEM PROMPT
+
+You are pair-programming with the user to take the VaultBank codebase to the next level of premium visual design (inspired by Wise, N26, and Linear) and features. 
+
+## 1. Project Background & Tech Stack
+- **Backend**: Node.js, Express, MongoDB Mongoose, Session auth, Passport Google OAuth, nodemailer, and custom memory rate-limiters.
+- **Frontend**: React (Vite), Chart.js (react-chartjs-2), and Vanilla CSS (designed inside client/src/styles/index.css and respective page modules).
+- **Core Design Ethos**: High-contrast typography (Plus Jakarta Sans, JetBrains Mono for monetary figures), dynamic theme variables (Light Mode warm-parchment `#F7F6F3` / Dark Mode deep slate `#0D0C0A`), card hover lifts, and spring click behaviors.
+
+---
+
+## 2. Recommended Next-Gen Features to Implement
+
+### A. Advanced Security & Notifications
+- **Real-Time Notification Feed**: Add a drawer inside the Top Header Bar that lists all historical rejected transfers, frozen cards, near-due credit card payments, or mandate executions, rather than just showing banners.
+- **Biometric / PIN Authentications**: Simulate a 4-digit PIN lock screen overlay when the user has been inactive for more than 5 minutes.
+
+### B. Rich Dashboard Usability Features
+- **Credit Score Optimizer Simulator**: An interactive slider dashboard where customers can model how paying outstanding card limits on time or opening fixed deposits improves their CIBIL score.
+- **Custom Transaction Tagging**: Let users add custom tags (e.g. #Groceries, #Rent, #Leisure) to transactions and view auto-generated bento charts illustrating their weekly budget health.
+- **Fixed Deposit Certificate Downloader**: A premium PDF or styled DOC generator that downloads a formatted investment certificate for active Fixed Deposits.
+
+---
+
+## 3. High-Fidelity Animations & Interaction Tasks
+
+### A. Landing Page Motion Polish
+- **Interactive Particle Background**: Integrate a light canvas-based particle network floating behind the Hero text that shifts dynamically based on cursor position.
+- **Typing / Ingress Hero Header**: Make the landing text write itself out or slide in letter-by-letter with a spring-staggered ingress.
+- **Interactive calculator growth visualizer**: Add a visual compounding line graph next to the FD calculator that bends in real-time as the sliders change values.
+
+### B. Portal Transitions & Micro-Interactions
+- **Buttery Smooth Page Routing Transitions**: Use keyframes or CSS transitions to fade/slide the main workspace container (`.dashboard-layout__content`) when navigating sidebar pages.
+- **Card Flip Credit Card Hub**: Let the credit card model flip 180 degrees to reveal CVV and billing cycles when clicked.
+- **Button Wave Ripple**: Implement CSS keyframe ripples on all `.vault-btn` primary items when clicked to feel tactile and organic.

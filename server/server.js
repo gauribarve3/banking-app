@@ -13,12 +13,45 @@ const customerRoutes = require('./routes/customer.routes');
 const employeeRoutes = require('./routes/employee.routes');
 const adminRoutes = require('./routes/admin.routes');
 const mandateRoutes = require('./routes/mandate.routes');
+const auth = require('./middleware/auth');
+const User = require('./models/User');
 
 const app = express();
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require('socket.io');
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PATCH'],
+    credentials: true
+  }
+});
+
+app.set('io', io);
+
+// Socket.io room joins
+io.on('connection', (socket) => {
+  console.log('Client connected:', socket.id);
+
+  socket.on('join_room', (roomName) => {
+    socket.join(roomName);
+    console.log(`Socket ${socket.id} joined room: ${roomName}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
+});
+
+const { generalRateLimiter } = require('./middleware/rateLimiter');
+const { securityGuard } = require('./middleware/security');
 
 // Middleware
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
+app.use('/api', generalRateLimiter);
+app.use('/api', securityGuard);
 
 // Passport Google OAuth setup
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
@@ -50,6 +83,29 @@ app.use('/api/employee', employeeRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/customer/mandates', mandateRoutes);
 
+// VPA recipient resolution endpoint (UPI simulation)
+app.get('/api/users/resolve', auth, async (req, res) => {
+  try {
+    const { vpa } = req.query;
+    if (!vpa) {
+      return res.status(400).json({ success: false, message: 'VPA is required.' });
+    }
+    const resolvedUser = await User.findOne({ vpa: vpa.toLowerCase(), role: 'customer' });
+    if (!resolvedUser) {
+      return res.status(404).json({ success: false, message: 'Recipient VPA not found.' });
+    }
+    res.json({
+      success: true,
+      name: `${resolvedUser.firstName} ${resolvedUser.lastName}`,
+      vpa: resolvedUser.vpa,
+      accountNumber: resolvedUser.accounts.find(a => a.accountType === 'Savings')?.accountNumber || resolvedUser.accounts[0]?.accountNumber
+    });
+  } catch (error) {
+    console.error('Resolve VPA error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -72,7 +128,7 @@ const startServer = async () => {
   // Start mandate cron job
   startMandateCron();
 
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 };
