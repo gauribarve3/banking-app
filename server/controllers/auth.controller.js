@@ -253,9 +253,11 @@ exports.googleAuth = (req, res, next) => {
 // GET /api/auth/google/callback — Handle Google OAuth callback
 exports.googleCallback = (req, res, next) => {
   const passport = require('passport');
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+
   passport.authenticate('google', { session: false, failureRedirect: '/login?error=google_auth_failed' }, async (err, profile) => {
     if (err || !profile) {
-      return res.redirect('http://localhost:5173/login?error=google_auth_failed');
+      return res.redirect(`${clientUrl}/login?error=google_auth_failed`);
     }
 
     try {
@@ -304,10 +306,10 @@ exports.googleCallback = (req, res, next) => {
       );
 
       // Redirect to frontend with token
-      res.redirect(`http://localhost:5173/auth/google/callback?token=${token}`);
+      res.redirect(`${clientUrl}/auth/google/callback?token=${token}`);
     } catch (error) {
       console.error('Google callback error:', error);
-      res.redirect('http://localhost:5173/login?error=server_error');
+      res.redirect(`${clientUrl}/login?error=server_error`);
     }
   })(req, res, next);
 };
