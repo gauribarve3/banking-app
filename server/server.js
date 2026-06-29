@@ -119,8 +119,40 @@ app.get('/api/users/resolve', auth, async (req, res) => {
 });
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get('/api/health', async (req, res) => {
+  try {
+    const dbState = mongoose.connection.readyState;
+    const states = {
+      0: 'disconnected',
+      1: 'connected',
+      2: 'connecting',
+      3: 'disconnecting'
+    };
+
+    let userCount = 0;
+    let emails = [];
+    if (dbState === 1) {
+      userCount = await User.countDocuments({});
+      const users = await User.find({}).select('email role');
+      emails = users.map(u => `${u.email} (${u.role})`);
+    }
+
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      database: {
+        state: states[dbState] || 'unknown',
+        userCount,
+        accounts: emails
+      }
+    });
+  } catch (err) {
+    res.json({
+      status: 'error',
+      message: err.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Global error handler
