@@ -3,6 +3,7 @@ const cors = require('cors');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 require('dotenv').config();
+const mongoose = require('mongoose');
 
 const connectDB = require('./config/db');
 const { startMandateCron } = require('./cron/mandateProcessor');
