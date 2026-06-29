@@ -48,19 +48,31 @@ const { generalRateLimiter } = require('./middleware/rateLimiter');
 const { securityGuard } = require('./middleware/security');
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    process.env.CLIENT_URL
+  ].filter(Boolean),
+  credentials: true
+}));
 app.use(express.json());
 app.use('/api', generalRateLimiter);
 app.use('/api', securityGuard);
 
 // Passport Google OAuth setup
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  let googleCallbackUrl = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/api/auth/google/callback';
+  if (googleCallbackUrl && !googleCallbackUrl.endsWith('/api/auth/google/callback')) {
+    googleCallbackUrl = googleCallbackUrl.replace(/\/$/, '') + '/api/auth/google/callback';
+  }
+
   passport.use(
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/api/auth/google/callback',
+        callbackURL: googleCallbackUrl,
       },
       (accessToken, refreshToken, profile, done) => {
         // Pass the profile to the callback handler
