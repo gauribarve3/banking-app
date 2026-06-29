@@ -1,0 +1,16 @@
+VAULTBANK PORTAL - TERMS & CONDITIONS
+Last Updated: June 29, 2026
+
+1. COMPLIANCE & AUTHORIZATION
+By accessing the VaultBank commercial portal, you acknowledge that all activities are subject to regulations issued by the Reservve Bank of India (RBI). Accounts and transactions are audited to ensure security and prevent financial irregularities.
+
+2. FRAUD ESCROW AND APPROVAL RULES
+VaultBank reserves the authority to hold any transfer equal to or exceeding ₹10,000 in escrow pending manual compliance review by a branch manager. If a transfer is flagged or rejected due to high-risk assessments, your credit card may be temporarily frozen to safeguard assets.
+
+3. ACCOUNT AGGREGATOR PERMISSIONS
+The Account Aggregator (AA) simulator operates on a secure consent-based model. Approving consent grants relationship managers access to read 6-month transaction ledgers and balance summaries for credit limit updates and extended reviews. Active consents expire in 30 days and can be revoked at any time.
+
+4. CREDITS & COMPILING BALANCE
+Credit card repayments must be completed before the specified billing due dates to prevent 2.5% daily compounding interest charges. Late repayments will result in automatic CIBIL score deductions.
+
+Thank you for choosing VaultBank. For operational queries, please consult your relationship manager.

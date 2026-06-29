@@ -25,6 +25,7 @@ export default function CustomerDashboard() {
   const [mandates, setMandates] = useState([]);
   const [warnings, setWarnings] = useState([]);
   const [summaryData, setSummaryData] = useState(null);
+  const [consents, setConsents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Interactive modal states
@@ -36,11 +37,12 @@ export default function CustomerDashboard() {
 
   const fetchData = async () => {
     try {
-      const [accRes, txRes, mandateRes, summaryRes] = await Promise.all([
+      const [accRes, txRes, mandateRes, summaryRes, consentRes] = await Promise.all([
         apiClient.get('/customer/accounts'),
         apiClient.get('/customer/transactions'),
         apiClient.get('/customer/mandates'),
-        apiClient.get('/customer/transactions/summary')
+        apiClient.get('/customer/transactions/summary'),
+        apiClient.get('/customer/consents')
       ]);
       setAccounts(accRes.data.accounts || []);
       setPoc(accRes.data.poc || null);
@@ -49,6 +51,7 @@ export default function CustomerDashboard() {
       const mands = mandateRes.data.mandates || [];
       setMandates(mands);
       setSummaryData(summaryRes.data.monthlySummary || {});
+      setConsents(consentRes.data.consents || []);
 
       // Analyze warnings
       const calculatedWarnings = analyzeWarnings(
@@ -62,6 +65,15 @@ export default function CustomerDashboard() {
       console.error('Dashboard fetch error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleConsentAction = async (consentId, action) => {
+    try {
+      await apiClient.post(`/customer/consents/${consentId}/respond`, { action });
+      fetchData();
+    } catch (err) {
+      console.error('Consent action error:', err);
     }
   };
 
@@ -80,10 +92,16 @@ export default function CustomerDashboard() {
       fetchData();
     };
 
+    const handleConsentRequest = ({ consent }) => {
+      setConsents(prev => [consent, ...prev]);
+    };
+
     socket.on('transaction:status_update', handleStatusUpdate);
+    socket.on('consent:requested', handleConsentRequest);
 
     return () => {
       socket.off('transaction:status_update', handleStatusUpdate);
+      socket.off('consent:requested', handleConsentRequest);
     };
   }, []);
 
@@ -211,6 +229,44 @@ export default function CustomerDashboard() {
       )
     : [];
 
+  // Data Consent pending banner
+  const pendingConsent = consents.find(c => c.status === 'pending');
+
+  // Chart data calculations
+  const monthKeys = Object.keys(summaryData || {}).sort();
+  const currentMonthKey = monthKeys.length > 0 ? monthKeys[monthKeys.length - 1] : '';
+
+  const spendingCategories = ['Food', 'Utilities', 'Subscriptions', 'Rent', 'Entertainment', 'Investments', 'Transfers'];
+  const spendingColors = ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#06B6D4', '#64748B'];
+
+  const donutChartData = {
+    labels: spendingCategories,
+    datasets: [{
+      data: spendingCategories.map(cat => {
+        if (!summaryData || !currentMonthKey) return 0;
+        return summaryData[currentMonthKey][cat] || 0;
+      }),
+      backgroundColor: spendingColors,
+      borderColor: 'var(--color-bg-card)',
+      borderWidth: 2,
+      hoverOffset: 6
+    }]
+  };
+
+  const barChartData = {
+    labels: monthKeys.map(m => {
+      const [year, monthStr] = m.split('-');
+      const d = new Date(parseInt(year), parseInt(monthStr) - 1, 1);
+      return d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+    }),
+    datasets: spendingCategories.map((cat, idx) => ({
+      label: cat,
+      data: monthKeys.map(m => (summaryData && summaryData[m] ? summaryData[m][cat] || 0 : 0)),
+      backgroundColor: spendingColors[idx],
+      borderRadius: 4
+    }))
+  };
+
   return (
     <div className="customer-dashboard">
       <div className="page-header">
@@ -279,6 +335,25 @@ export default function CustomerDashboard() {
             </div>
           </div>
           <Button variant="primary" size="sm" onClick={() => navigate('/customer/credit-card')}>Repay Now</Button>
+        </div>
+      )}
+
+      {/* Pending Account Aggregator Consent Request Banner */}
+      {pendingConsent && (
+        <div className="cc-banner cc-banner--eligible" style={{ marginBottom: '24px', border: '1px solid var(--color-accent)', background: 'rgba(99, 102, 241, 0.05)', padding: '16px', borderRadius: 'var(--radius-lg)' }}>
+          <div className="cc-banner__content" style={{ flex: 1, display: 'flex', gap: '12px' }}>
+            <span className="cc-banner__icon" style={{ fontSize: '24px' }}>🔒</span>
+            <div style={{ flex: 1 }}>
+              <h4 className="cc-banner__title" style={{ margin: '0 0 4px 0', fontSize: '15px', color: 'var(--color-accent)' }}>Data Consent Requested (RBI Account Aggregator)</h4>
+              <p className="cc-banner__desc" style={{ margin: 0, fontSize: '13px', color: 'var(--color-text-primary)' }}>
+                Relationship Manager <strong>{pendingConsent.requestedBy?.firstName} {pendingConsent.requestedBy?.lastName}</strong> is requesting data access to your <strong>account summary and 6-month transaction logs</strong> for <strong>{pendingConsent.purpose}</strong>. Consent duration: 30 days.
+              </p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '12px', justifyContent: 'flex-end' }}>
+            <Button variant="danger" size="sm" onClick={() => handleConsentAction(pendingConsent._id, 'deny')}>Deny</Button>
+            <Button variant="primary" size="sm" onClick={() => handleConsentAction(pendingConsent._id, 'grant')}>Approve & Grant</Button>
+          </div>
         </div>
       )}
 
@@ -412,6 +487,64 @@ export default function CustomerDashboard() {
           </div>
         </Card>
       </div>
+
+      {/* Spending Analytics Charts Section */}
+      {summaryData && Object.keys(summaryData).length > 0 && (
+        <div className="charts-grid" style={{ marginTop: '24px', marginBottom: '24px' }}>
+          <Card className="chart-card">
+            <h3 className="chart-card__title">Category Spending Breakdown ({currentMonthKey ? new Date(currentMonthKey + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : 'Current Month'})</h3>
+            <div className="chart-card__canvas" style={{ position: 'relative', height: '240px' }}>
+              <Doughnut
+                data={donutChartData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  cutout: '60%',
+                  plugins: {
+                    legend: { position: 'bottom', labels: { padding: 12, usePointStyle: true, font: { size: 11, family: 'Inter' } } },
+                    tooltip: {
+                      callbacks: { label: (ctx) => `${ctx.label}: ${formatCurrency(ctx.raw)}` },
+                      backgroundColor: '#1A1D26',
+                      padding: 10,
+                      cornerRadius: 6,
+                    }
+                  }
+                }}
+              />
+            </div>
+          </Card>
+
+          <Card className="chart-card">
+            <h3 className="chart-card__title">Monthly Spending Comparison (Last 3 Months)</h3>
+            <div className="chart-card__canvas" style={{ position: 'relative', height: '240px' }}>
+              <Bar
+                data={barChartData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10, usePointStyle: true, font: { size: 10, family: 'Inter' }, padding: 8 } },
+                    tooltip: {
+                      callbacks: { label: (ctx) => `${ctx.dataset.label}: ${formatCurrency(ctx.raw)}` },
+                      backgroundColor: '#1A1D26',
+                      padding: 10,
+                      cornerRadius: 6,
+                    }
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      ticks: { callback: v => `₹${(v).toLocaleString('en-IN')}`, font: { size: 10, family: 'Inter' } },
+                      grid: { color: 'rgba(0,0,0,0.04)' }
+                    },
+                    x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Inter' } } }
+                  }
+                }}
+              />
+            </div>
+          </Card>
+        </div>
+      )}
 
       <div className="dashboard-two-column">
         {/* Main Content (Left) */}

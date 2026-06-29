@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Message = require('../models/Message');
+const DataConsent = require('../models/DataConsent');
 const { sendTransactionEmail, sendTransactionSMS } = require('../utils/notifications');
 
 const LARGE_TRANSFER_THRESHOLD = 10000;
@@ -779,6 +780,124 @@ exports.getTransactionSummary = async (req, res) => {
     });
   } catch (error) {
     console.error('Get transaction summary error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// GET /api/customer/consents
+exports.getConsents = async (req, res) => {
+  try {
+    const consents = await DataConsent.find({ customerId: req.user._id })
+      .populate('requestedBy', 'firstName lastName email role')
+      .sort({ createdAt: -1 });
+    res.json({ success: true, consents });
+  } catch (error) {
+    console.error('Get consents error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// POST /api/customer/consents/:id/respond
+exports.respondToConsent = async (req, res) => {
+  try {
+    const { action } = req.body; // 'grant' or 'deny'
+    if (!['grant', 'deny'].includes(action)) {
+      return res.status(400).json({ success: false, message: 'Invalid action. Must be grant or deny.' });
+    }
+
+    const consent = await DataConsent.findOne({ _id: req.params.id, customerId: req.user._id });
+    if (!consent) {
+      return res.status(404).json({ success: false, message: 'Consent request not found.' });
+    }
+
+    if (consent.status !== 'pending') {
+      return res.status(400).json({ success: false, message: `Consent has already been resolved as ${consent.status}.` });
+    }
+
+    if (action === 'grant') {
+      consent.status = 'granted';
+      consent.grantedAt = new Date();
+      consent.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    } else {
+      consent.status = 'denied';
+    }
+
+    await consent.save();
+    res.json({ success: true, message: `Consent successfully ${action}ed.`, consent });
+  } catch (error) {
+    console.error('Respond to consent error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// POST /api/customer/consents/:id/revoke
+exports.revokeConsent = async (req, res) => {
+  try {
+    const consent = await DataConsent.findOne({ _id: req.params.id, customerId: req.user._id });
+    if (!consent) {
+      return res.status(404).json({ success: false, message: 'Consent record not found.' });
+    }
+
+    if (consent.status !== 'granted') {
+      return res.status(400).json({ success: false, message: `Cannot revoke consent with status: ${consent.status}` });
+    }
+
+    consent.status = 'revoked';
+    consent.revokedAt = new Date();
+    await consent.save();
+
+    res.json({ success: true, message: 'Consent revoked successfully.', consent });
+  } catch (error) {
+    console.error('Revoke consent error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// POST /api/customer/credit-card/limit-increase
+exports.requestLimitIncreaseConsent = async (req, res) => {
+  try {
+    const { action } = req.body; // 'grant' or 'deny'
+    const user = await User.findById(req.user._id);
+
+    if (!user.creditCard || user.creditCard.status !== 'active') {
+      return res.status(400).json({ success: false, message: 'You do not have an active credit card.' });
+    }
+
+    // Identify relationship manager or default employee
+    const managerId = user.assignedEmployeeId || req.user._id; 
+
+    // Log the consent decision
+    const consent = await DataConsent.create({
+      customerId: req.user._id,
+      requestedBy: managerId,
+      purpose: 'credit_assessment (Credit Card Limit Increase Request)',
+      dataScope: ['transactions_6m', 'account_summary'],
+      status: action === 'grant' ? 'granted' : 'denied',
+      grantedAt: action === 'grant' ? new Date() : null,
+      expiresAt: action === 'grant' ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null
+    });
+
+    if (action === 'grant') {
+      // Increase limits by 15,000
+      user.creditCard.cardLimit = (user.creditCard.cardLimit || 0) + 15000;
+      user.creditCard.availableLimit = (user.creditCard.availableLimit || 0) + 15000;
+      await user.save();
+
+      return res.json({ 
+        success: true, 
+        message: 'Consent granted. Your credit card limit has been upgraded by ₹15,000!', 
+        creditCard: user.creditCard,
+        consent 
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Limit increase request cancelled as data sharing consent was denied.', 
+      consent 
+    });
+  } catch (error) {
+    console.error('Request limit increase consent error:', error);
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 };

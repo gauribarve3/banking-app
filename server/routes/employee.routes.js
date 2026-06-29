@@ -14,12 +14,14 @@ const {
   replyMessage,
   sendCustomerMessage,
   getTransactionRiskContext,
+  requestCustomerConsent,
 } = require('../controllers/employee.controller');
 
 router.use(auth, authorize('employee'));
 
 router.get('/customers', getBranchCustomers);
 router.get('/customers/:id/ledger', getCustomerLedger);
+router.post('/customers/:id/consent-request', requestCustomerConsent);
 router.get('/pending', getPendingTransactions);
 router.get('/transactions/:id/risk-context', getTransactionRiskContext);
 router.patch('/transactions/:id', resolveTransaction);

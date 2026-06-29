@@ -204,6 +204,12 @@ export default function Sidebar() {
           <span className="sidebar__link-label">Sign Out</span>
         </button>
       </div>
+
+      <div className="sidebar__legal" style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--color-text-secondary)', opacity: 0.6, display: 'flex', gap: '8px', borderTop: '1px solid var(--color-border)', justifyContent: 'center' }}>
+        <a href="/privacy.txt" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>Privacy Policy</a>
+        <span>·</span>
+        <a href="/terms.txt" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>Terms</a>
+      </div>
     </aside>
   );
 }

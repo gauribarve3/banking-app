@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Message = require('../models/Message');
+const DataConsent = require('../models/DataConsent');
 const { sendTransactionEmail, sendTransactionSMS } = require('../utils/notifications');
 
 // GET /api/employee/customers
@@ -65,6 +66,17 @@ exports.getCustomerLedger = async (req, res) => {
       }
     }
 
+    // Check for active Account Aggregator consent
+    const consent = await DataConsent.findOne({
+      customerId: customer._id,
+      status: 'granted',
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!consent) {
+      return res.json({ success: true, customer, consentGranted: false, transactions: [] });
+    }
+
     let queryBuilder = Transaction.find(query).sort({ createdAt: -1 });
     if (!startDate && !endDate) {
       queryBuilder = queryBuilder.limit(100);
@@ -74,7 +86,7 @@ exports.getCustomerLedger = async (req, res) => {
       .populate('senderUserId', 'firstName lastName')
       .populate('receiverUserId', 'firstName lastName');
 
-    res.json({ success: true, customer, transactions });
+    res.json({ success: true, customer, consentGranted: true, transactions });
   } catch (error) {
     console.error('Get customer ledger error:', error);
     res.status(500).json({ success: false, message: 'Server error.' });
@@ -629,6 +641,43 @@ exports.getTransactionRiskContext = async (req, res) => {
     });
   } catch (error) {
     console.error('Get transaction risk context error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// POST /api/employee/customers/:id/consent-request
+exports.requestCustomerConsent = async (req, res) => {
+  try {
+    const customerId = req.params.id;
+    const customer = await User.findOne({ _id: customerId, role: 'customer' });
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Customer not found.' });
+    }
+
+    // Create a pending consent request
+    const consent = await DataConsent.create({
+      customerId,
+      requestedBy: req.user._id,
+      purpose: 'extended_financial_review (Manager Ledger Review)',
+      dataScope: ['transactions_6m', 'account_summary'],
+      status: 'pending'
+    });
+
+    // Populate requestedBy for UI consistency
+    const populatedConsent = await DataConsent.findById(consent._id)
+      .populate('requestedBy', 'firstName lastName email role');
+
+    // Push real-time event to customer room
+    const io = req.app.get('io');
+    io.to('user:' + customerId).emit('consent:requested', { consent: populatedConsent });
+
+    res.status(201).json({
+      success: true,
+      message: 'Extended review consent request sent to customer successfully.',
+      consent: populatedConsent
+    });
+  } catch (error) {
+    console.error('Request customer consent error:', error);
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 };

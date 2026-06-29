@@ -16,6 +16,9 @@ export default function CreditCardHub() {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  // Account Aggregator Consent State
+  const [showConsentModal, setShowConsentModal] = useState(false);
+
   // Spending Simulator State
   const [spendAmount, setSpendAmount] = useState('');
   const [merchant, setMerchant] = useState('');
@@ -114,6 +117,27 @@ export default function CreditCardHub() {
       fetchCardData();
     } catch (err) {
       setError(err.response?.data?.message || 'Repayment failed.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleConsentResponse = async (action) => {
+    setActionLoading(true);
+    setError('');
+    setSuccessMsg('');
+    try {
+      const res = await apiClient.post('/customer/credit-card/limit-increase', { action });
+      if (action === 'grant') {
+        setCreditCard(res.data.creditCard);
+        setSuccessMsg(res.data.message);
+      } else {
+        setError(res.data.message);
+      }
+      setShowConsentModal(false);
+      fetchCardData();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to process limit upgrade.');
     } finally {
       setActionLoading(false);
     }
@@ -361,6 +385,15 @@ export default function CreditCardHub() {
                 >
                   💵 Repay Outstanding Dues
                 </Button>
+
+                <Button 
+                  variant="outline" 
+                  fullWidth 
+                  onClick={() => setShowConsentModal(true)}
+                  style={{ marginTop: '12px' }}
+                >
+                  🚀 Request Credit Limit Increase
+                </Button>
               </div>
             </Card>
           </div>
@@ -473,6 +506,53 @@ export default function CreditCardHub() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Account Aggregator Consent Modal */}
+      <Modal
+        isOpen={showConsentModal}
+        onClose={() => setShowConsentModal(false)}
+        title="RBI Account Aggregator Consent Request"
+      >
+        <div style={{ padding: '4px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99, 102, 241, 0.15)', padding: '16px', borderRadius: 'var(--radius-md)' }}>
+            <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: 'var(--color-accent)' }}>Data Access Consent Request</h4>
+            <p style={{ margin: 0, fontSize: '13.5px', lineHeight: '1.5', color: 'var(--color-text-primary)' }}>
+              <strong>VaultBank Credit Team</strong> is requesting access to your financial metrics for credit limit underwriting:
+            </p>
+            <ul style={{ margin: '10px 0 0 0', paddingLeft: '20px', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <li>6-Month Account Transaction History (`transactions_6m`)</li>
+              <li>Comprehensive Account Summary & Balance details (`account_summary`)</li>
+            </ul>
+          </div>
+          
+          <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div><strong>Purpose:</strong> credit_assessment (Credit Card Limit Upgrade)</div>
+            <div><strong>Duration:</strong> 30 Days (Revocable at any time from your Profile Security tab)</div>
+            <div><strong>Framework:</strong> Consent-based secure sandbox (RBI Dec 2021 framework specs)</div>
+          </div>
+
+          <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
+            By clicking "Approve & Grant", your transaction history is digitally retrieved via secure API to calculate card limit upgrades. Denying will reject the limit increase.
+          </p>
+
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '8px' }}>
+            <Button 
+              variant="danger" 
+              onClick={() => handleConsentResponse('deny')}
+              isLoading={actionLoading}
+            >
+              Deny Sharing
+            </Button>
+            <Button 
+              variant="primary" 
+              onClick={() => handleConsentResponse('grant')}
+              isLoading={actionLoading}
+            >
+              Approve & Grant
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

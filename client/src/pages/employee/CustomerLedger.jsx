@@ -15,6 +15,25 @@ export default function CustomerLedger() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [freezeLoading, setFreezeLoading] = useState('');
+  
+  // Consent request states
+  const [requestLoading, setRequestLoading] = useState(false);
+  const [requestSuccess, setRequestSuccess] = useState('');
+  const [consentGranted, setConsentGranted] = useState(true);
+
+  const handleRequestConsent = async () => {
+    setRequestLoading(true);
+    setRequestSuccess('');
+    try {
+      const res = await apiClient.post(`/employee/customers/${id}/consent-request`);
+      setRequestSuccess(res.data.message);
+      setTimeout(() => setRequestSuccess(''), 4000);
+    } catch (err) {
+      console.error('Consent request error:', err);
+    } finally {
+      setRequestLoading(false);
+    }
+  };
 
   // Statement date filtering states
   const [filterStart, setFilterStart] = useState('');
@@ -31,6 +50,7 @@ export default function CustomerLedger() {
       });
       setCustomer(res.data.customer);
       setTransactions(res.data.transactions);
+      setConsentGranted(res.data.consentGranted !== false);
     } catch (err) {
       console.error('Ledger fetch error:', err);
     } finally {
@@ -155,6 +175,21 @@ export default function CustomerLedger() {
             <h1 className="ledger-profile__name">{customer.firstName} {customer.lastName}</h1>
             <p className="ledger-profile__email">{customer.email}</p>
           </div>
+          <div className="ledger-profile__actions" style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRequestConsent}
+              isLoading={requestLoading}
+            >
+              🔄 Request Extended Review (AA)
+            </Button>
+            {requestSuccess && (
+              <span style={{ fontSize: '12px', color: 'var(--color-success)', fontWeight: '600' }}>
+                ✓ {requestSuccess}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="ledger-accounts">
@@ -186,90 +221,114 @@ export default function CustomerLedger() {
       </Card>
 
       {/* Transaction Ledger */}
-      <section className="section">
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 'var(--space-4)',
-          flexWrap: 'wrap',
-          gap: '16px'
-        }}>
-          <h2 className="section-title" style={{ margin: 0 }}>Transaction Ledger</h2>
-          
+      {consentGranted ? (
+        <section className="section">
           <div style={{
             display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            gap: '12px',
+            marginBottom: 'var(--space-4)',
             flexWrap: 'wrap',
-            background: 'var(--color-bg-card)',
-            padding: '8px 16px',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px solid var(--color-border-light)'
+            gap: '16px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>From:</span>
-              <input
-                type="date"
-                value={filterStart}
-                onChange={(e) => setFilterStart(e.target.value)}
-                style={{
-                  padding: '6px 10px',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--color-border)',
-                  background: 'var(--color-bg-primary)',
-                  color: 'var(--color-text-primary)',
-                  fontSize: '12px',
-                  outline: 'none'
-                }}
-              />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>To:</span>
-              <input
-                type="date"
-                value={filterEnd}
-                onChange={(e) => setFilterEnd(e.target.value)}
-                style={{
-                  padding: '6px 10px',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--color-border)',
-                  background: 'var(--color-bg-primary)',
-                  color: 'var(--color-text-primary)',
-                  fontSize: '12px',
-                  outline: 'none'
-                }}
-              />
-            </div>
-            <Button
-              size="sm"
-              onClick={handleApplyFilter}
-              isLoading={filterLoading}
-            >
-              Filter
-            </Button>
-            {(filterStart || filterEnd) && (
+            <h2 className="section-title" style={{ margin: 0 }}>Transaction Ledger</h2>
+            
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              flexWrap: 'wrap',
+              background: 'var(--color-bg-card)',
+              padding: '8px 16px',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid var(--color-border-light)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>From:</span>
+                <input
+                  type="date"
+                  value={filterStart}
+                  onChange={(e) => setFilterStart(e.target.value)}
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-bg-primary)',
+                    color: 'var(--color-text-primary)',
+                    fontSize: '12px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>To:</span>
+                <input
+                  type="date"
+                  value={filterEnd}
+                  onChange={(e) => setFilterEnd(e.target.value)}
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-bg-primary)',
+                    color: 'var(--color-text-primary)',
+                    fontSize: '12px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
               <Button
                 size="sm"
-                variant="secondary"
-                onClick={handleClearFilter}
+                onClick={handleApplyFilter}
+                isLoading={filterLoading}
               >
-                Clear
+                Filter
               </Button>
-            )}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleExportCSV}
-              disabled={transactions.length === 0}
-            >
-              📥 Download Statement
-            </Button>
+              {(filterStart || filterEnd) && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleClearFilter}
+                >
+                  Clear
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleExportCSV}
+                disabled={transactions.length === 0}
+              >
+                📥 Download Statement
+              </Button>
+            </div>
           </div>
-        </div>
 
-        <Table columns={txColumns} data={transactions} emptyMessage="No transactions matching selection criteria." />
-      </section>
+          <Table columns={txColumns} data={transactions} emptyMessage="No transactions matching selection criteria." />
+        </section>
+      ) : (
+        <Card style={{ padding: '40px 24px', textAlign: 'center', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', marginTop: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ fontSize: '32px', marginBottom: '16px' }}>🔒</div>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '700' }}>6-Month Ledger Access Locked</h3>
+          <p style={{ margin: '0 auto 20px', maxWidth: '480px', fontSize: '14px', lineHeight: '1.5', color: 'var(--color-text-secondary)' }}>
+            Under RBI Account Aggregator guidelines, checking this customer's transactional statistics requires active, explicit data sharing consent. Click below to submit a consent request to the customer.
+          </p>
+          
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleRequestConsent}
+            isLoading={requestLoading}
+          >
+            Request Extended Review Consent (AA)
+          </Button>
+          {requestSuccess && (
+            <div style={{ marginTop: '12px', fontSize: '13.5px', color: 'var(--color-success)', fontWeight: '600' }}>
+              ✓ {requestSuccess}
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

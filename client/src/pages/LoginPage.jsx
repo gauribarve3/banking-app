@@ -119,7 +119,8 @@ export default function LoginPage() {
 
       {/* Main card center container */}
       <div className="login-page__content">
-        <div className="login-card vault-appear" style={{ '--delay': '100ms' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '440px', gap: '20px' }}>
+          <div className="login-card vault-appear" style={{ '--delay': '100ms' }}>
           
           <div className="login-card__brand">
             <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
@@ -340,6 +341,11 @@ export default function LoginPage() {
             </form>
           )}
         </div>
+        <div className="login-footer" style={{ textAlign: 'center', fontSize: '12px', color: 'var(--color-text-secondary)', opacity: 0.8 }}>
+          <a href="/privacy.txt" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline', marginRight: '12px' }}>Privacy Policy</a>
+          <a href="/terms.txt" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>Terms & Conditions</a>
+        </div>
+      </div>
       </div>
     </div>
   );

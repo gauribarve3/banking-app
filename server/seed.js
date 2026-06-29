@@ -7,6 +7,7 @@ const User = require('./models/User');
 const Transaction = require('./models/Transaction');
 const Branch = require('./models/Branch');
 const Message = require('./models/Message');
+const DataConsent = require('./models/DataConsent');
 
 const generateAccountNumber = () => {
   let digits = '9090';
@@ -27,6 +28,7 @@ const seed = async () => {
     await Transaction.deleteMany({});
     await Branch.deleteMany({});
     await Message.deleteMany({});
+    await DataConsent.deleteMany({});
     try {
       await User.collection.dropIndexes();
       console.log('Dropped existing indexes on User collection.');

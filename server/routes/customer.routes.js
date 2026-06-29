@@ -18,6 +18,10 @@ const {
   sendMessage,
   getMessages,
   getTransactionSummary,
+  getConsents,
+  respondToConsent,
+  revokeConsent,
+  requestLimitIncreaseConsent,
 } = require('../controllers/customer.controller');
 
 router.use(auth, authorize('customer'));
@@ -25,6 +29,10 @@ router.use(auth, authorize('customer'));
 router.get('/accounts', getAccounts);
 router.get('/transactions', getTransactions);
 router.get('/transactions/summary', getTransactionSummary);
+router.get('/consents', getConsents);
+router.post('/consents/:id/respond', respondToConsent);
+router.post('/consents/:id/revoke', revokeConsent);
+router.post('/credit-card/limit-increase', requestLimitIncreaseConsent);
 router.get('/profile', getProfile);
 router.patch('/profile', updateProfile);
 router.post('/transfer', fraudCheck, initiateTransfer);

@@ -6,3 +6,5 @@ server/.env
 credentials.txt
 .gemini/
 dist/
+vaultbank_improvement_prompt.txt
+vaultbank_project_documentation.txt

@@ -1,0 +1,13 @@
+VAULTBANK PRIVACY POLICY
+Effective Date: June 29, 2026
+
+1. DATA RETRIEVAL & CONSENT SECURITY
+We are committed to securing your private financial statistics. All data sharing requested by relationship managers or third-party underwriters is subject to explicit customer approval via the Reservve Bank of India (RBI) Account Aggregator (AA) framework. Customers reserve full authority to grant, deny, or revoke data access at any time from their profile dashboard.
+
+2. LOGGED METRICS & USAGE SCOPE
+We collect and review transactional ledger details, credit usage history, and account summaries solely for internal processing, fraud screening, and credit card limit underwritings. We do not sell or lease your financial statistics to external brokers.
+
+3. DISCLOSURE & SHARING CONTROLS
+Transactional summaries are shared with clearing departments, banking managers, and compliance authorities solely to resolve pending escrows and prevent financial risks.
+
+If you have any questions regarding privacy controls, please contact your VaultBank Branch relationship manager.
