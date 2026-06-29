@@ -6,7 +6,7 @@ if (apiBaseURL) {
     apiBaseURL = apiBaseURL.replace(/\/$/, '') + '/api';
   }
 } else {
-  apiBaseURL = typeof window !== 'undefined' ? window.location.origin + '/api' : 'http://localhost:5000/api';
+  apiBaseURL = 'https://vaultbank-backend-3x09.onrender.com/api';
 }
 
 const apiClient = axios.create({
