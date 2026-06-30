@@ -678,13 +678,13 @@ export default function CustomerDashboard() {
               </div>
               <div className="poc-card__body">
                 <div className="poc-card__avatar">
-                  {poc.firstName[0]}{poc.lastName[0]}
+                  {poc?.firstName?.[0] || ''}{poc?.lastName?.[0] || ''}
                 </div>
                 <div className="poc-card__details">
-                  <span className="poc-card__name">{poc.firstName} {poc.lastName}</span>
+                  <span className="poc-card__name">{poc?.firstName || ''} {poc?.lastName || 'Manager'}</span>
                   <span className="poc-card__role">Branch Manager</span>
-                  <span className="poc-card__email">{poc.email}</span>
-                  <span className="poc-card__branch">📍 {poc.assignedBranchId?.name || 'Local Branch'}</span>
+                  <span className="poc-card__email">{poc?.email || ''}</span>
+                  <span className="poc-card__branch">📍 {poc?.assignedBranchId?.name || 'Local Branch'}</span>
                 </div>
               </div>
               <div className="poc-card__footer">

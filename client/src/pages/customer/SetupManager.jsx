@@ -64,32 +64,41 @@ export default function SetupManager() {
         {error && <div className="setup-error">{error}</div>}
 
         <div className="manager-cards-grid">
-          {managers.map((manager) => (
-            <Card key={manager._id} className="manager-select-card">
-              <div className="manager-card-avatar">
-                {manager?.firstName?.[0] || ''}{manager?.lastName?.[0] || ''}
-              </div>
-              <div className="manager-card-info">
-                <h3>{manager?.firstName || ''} {manager?.lastName || 'Manager'}</h3>
-                <span className="manager-badge">Branch Manager</span>
-                <p className="manager-email">📧 {manager?.email || ''}</p>
-                <div className="manager-branch-details">
-                  <strong>📍 {manager.assignedBranchId?.name || 'Local Branch'}</strong>
-                  <p>{manager.assignedBranchId?.location || 'Branch Location Info'}</p>
-                </div>
-              </div>
-              <div className="manager-card-action">
-                <Button
-                  variant="primary"
-                  fullWidth
-                  onClick={() => handleSelectManager(manager._id)}
-                  isLoading={selecting === manager._id}
-                >
-                  Select & Activate Account
-                </Button>
-              </div>
-            </Card>
-          ))}
+          {managers && managers.length > 0 ? (
+            managers.map((manager) => {
+              if (!manager || !manager._id) return null;
+              return (
+                <Card key={manager._id} className="manager-select-card">
+                  <div className="manager-card-avatar">
+                    {manager?.firstName?.[0] || ''}{manager?.lastName?.[0] || ''}
+                  </div>
+                  <div className="manager-card-info">
+                    <h3>{manager?.firstName || ''} {manager?.lastName || 'Manager'}</h3>
+                    <span className="manager-badge">Branch Manager</span>
+                    <p className="manager-email">📧 {manager?.email || ''}</p>
+                    <div className="manager-branch-details">
+                      <strong>📍 {manager?.assignedBranchId?.name || 'Local Branch'}</strong>
+                      <p>{manager?.assignedBranchId?.location || 'Branch Location Info'}</p>
+                    </div>
+                  </div>
+                  <div className="manager-card-action">
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onClick={() => handleSelectManager(manager._id)}
+                      isLoading={selecting === manager._id}
+                    >
+                      Select & Activate Account
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })
+          ) : (
+            <div className="setup-no-managers" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--color-text-secondary)' }}>
+              No active branch managers found to assign. Please contact support.
+            </div>
+          )}
         </div>
       </div>
     </div>
