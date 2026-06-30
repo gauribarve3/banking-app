@@ -90,7 +90,8 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `${apiClient.defaults.baseURL}/auth/google`;
+    const from = encodeURIComponent(window.location.origin);
+    window.location.href = `${apiClient.defaults.baseURL}/auth/google?from=${from}`;
   };
 
   const updateSignupField = (field, value) => {

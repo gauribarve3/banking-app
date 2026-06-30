@@ -247,15 +247,31 @@ exports.changePassword = async (req, res) => {
 // GET /api/auth/google — Redirect to Google OAuth
 exports.googleAuth = (req, res, next) => {
   const passport = require('passport');
-  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+  const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+  const host = req.get('host');
+  const dynamicCallbackUrl = `${protocol}://${host}/api/auth/google/callback`;
+  const from = req.query.from || '';
+
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    callbackURL: dynamicCallbackUrl,
+    state: from
+  })(req, res, next);
 };
 
 // GET /api/auth/google/callback — Handle Google OAuth callback
 exports.googleCallback = (req, res, next) => {
   const passport = require('passport');
-  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+  const host = req.get('host');
+  const dynamicCallbackUrl = `${protocol}://${host}/api/auth/google/callback`;
+  const clientUrl = req.query.state || process.env.CLIENT_URL || 'http://localhost:5173';
 
-  passport.authenticate('google', { session: false, failureRedirect: '/login?error=google_auth_failed' }, async (err, profile) => {
+  passport.authenticate('google', {
+    session: false,
+    failureRedirect: `${clientUrl}/login?error=google_auth_failed`,
+    callbackURL: dynamicCallbackUrl
+  }, async (err, profile) => {
     if (err || !profile) {
       return res.redirect(`${clientUrl}/login?error=google_auth_failed`);
     }
