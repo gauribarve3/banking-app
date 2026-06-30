@@ -137,7 +137,7 @@ cd banking-app
 cd server
 npm install
 ```
-Create a `.env` file in the `server` directory (see the root [.env.example](../.env.example)).
+Create a `.env` file in the `server` directory (see the root [.env.example](.env.example)).
 
 Initialize the database with mock branches, managers, and customers:
 ```bash
@@ -155,7 +155,7 @@ Open a new terminal window:
 cd client
 npm install
 ```
-Create a `.env` file in the `client` directory (see the root [.env.example](../.env.example)).
+Create a `.env` file in the `client` directory (see the root [.env.example](.env.example)).
 
 Start the client development server:
 ```bash
