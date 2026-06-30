@@ -24,7 +24,7 @@ export default function GoogleCallback() {
           employee: '/employee/dashboard',
           admin: '/admin/dashboard',
         };
-        navigate(roleHome[user.role] || '/');
+        window.location.href = roleHome[user.role] || '/';
       } catch (err) {
         console.error('Google login processing failed:', err);
         setError('Failed to complete Google authentication. Redirecting...');

@@ -298,14 +298,20 @@ exports.googleCallback = (req, res, next) => {
           const currentAccNum = generateIndianAccNum();
           const savingsAccNum = generateIndianAccNum();
 
+          // Assign to a random employee (branch manager) if available
+          const employees = await User.find({ role: 'employee', isActive: true }).select('_id assignedBranchId');
+          const assignedEmployee = employees.length > 0
+            ? employees[Math.floor(Math.random() * employees.length)]
+            : null;
+
           user = await User.create({
             googleId: profile.id,
             firstName: profile.name?.givenName || 'User',
             lastName: profile.name?.familyName || 'GoogleUser',
             email: profile.emails[0].value.toLowerCase(),
             role: 'customer',
-            assignedEmployeeId: null, // First-time Google customers choose their invited manager
-            assignedBranchId: null,
+            assignedEmployeeId: assignedEmployee?._id,
+            assignedBranchId: assignedEmployee?.assignedBranchId,
             accounts: [
               { accountType: 'Current', accountNumber: currentAccNum, balance: 0 },
               { accountType: 'Savings', accountNumber: savingsAccNum, balance: 0 },
