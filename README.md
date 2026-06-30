@@ -12,7 +12,7 @@
 
 ## 📌 Overview
 
-VaultBank is a production-grade digital banking solution that solves the complexity of modern retail bank workflows. It features distinct portals for **Customers**, **Branch Employees (Relationship Managers)**, and **Administrators**.
+VaultBank is a production-grade digital banking solution that solves the complexity of modern retail bank workflows. It features distinct portals for **Customers**, **Branch Employees (Relationship Managers)**, and **Administrators(Owner)**.
 
 Unlike standard dashboard-only banking demos, VaultBank implements active, secure banking logic:
 * **Interactive Transfers**: Internal transfers and domestic NEFT/IMPS simulation with transaction approval ceilings.
@@ -137,7 +137,7 @@ cd banking-app
 cd server
 npm install
 ```
-Create a `.env` file in the `server` directory (see [.env.example](#server-envexample)).
+Create a `.env` file in the `server` directory (see the root [.env.example](../.env.example)).
 
 Initialize the database with mock branches, managers, and customers:
 ```bash
@@ -155,7 +155,7 @@ Open a new terminal window:
 cd client
 npm install
 ```
-Create a `.env` file in the `client` directory (see [.env.example](#client-envexample)).
+Create a `.env` file in the `client` directory (see the root [.env.example](../.env.example)).
 
 Start the client development server:
 ```bash
