@@ -67,12 +67,12 @@ export default function SetupManager() {
           {managers.map((manager) => (
             <Card key={manager._id} className="manager-select-card">
               <div className="manager-card-avatar">
-                {manager.firstName[0]}{manager.lastName[0]}
+                {manager?.firstName?.[0] || ''}{manager?.lastName?.[0] || ''}
               </div>
               <div className="manager-card-info">
-                <h3>{manager.firstName} {manager.lastName}</h3>
+                <h3>{manager?.firstName || ''} {manager?.lastName || 'Manager'}</h3>
                 <span className="manager-badge">Branch Manager</span>
-                <p className="manager-email">📧 {manager.email}</p>
+                <p className="manager-email">📧 {manager?.email || ''}</p>
                 <div className="manager-branch-details">
                   <strong>📍 {manager.assignedBranchId?.name || 'Local Branch'}</strong>
                   <p>{manager.assignedBranchId?.location || 'Branch Location Info'}</p>
